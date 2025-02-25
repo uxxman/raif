@@ -2,9 +2,9 @@
 
 class Raif::ConversationEntry < Raif::ApplicationRecord
   belongs_to :raif_conversation, counter_cache: true, class_name: "Raif::Conversation"
-  belongs_to :creator, class_name: "User"
+  belongs_to :creator, polymorphic: true
 
-  has_one :user_tool_invocation,
+  has_one :raif_user_tool_invocation,
     class_name: "Raif::UserToolInvocation",
     dependent: :destroy,
     foreign_key: :raif_conversation_entry_id,
@@ -18,16 +18,16 @@ class Raif::ConversationEntry < Raif::ApplicationRecord
 
   delegate :prompt, :response, to: :raif_completion, prefix: true
 
-  accepts_nested_attributes_for :user_tool_invocation
+  accepts_nested_attributes_for :raif_user_tool_invocation
 
   boolean_timestamp :started_at
   boolean_timestamp :completed_at
   boolean_timestamp :failed_at
 
   def full_user_message
-    if user_tool_invocation.present?
+    if raif_user_tool_invocation.present?
       <<~MESSAGE
-        #{user_tool_invocation.as_user_message}
+        #{raif_user_tool_invocation.as_user_message}
 
         #{user_message}
       MESSAGE
