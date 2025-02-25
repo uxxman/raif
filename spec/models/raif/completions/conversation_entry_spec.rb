@@ -3,8 +3,8 @@
 require "rails_helper"
 
 RSpec.describe Raif::Completions::ConversationEntry, type: :model do
-  let(:conversation) { FB.create(:raif_test_conversation) }
-  let(:creator){ conversation.creator }
+  let(:creator) { Raif::TestUser.create!(email: "test@example.com") }
+  let(:conversation) { FB.create(:raif_test_conversation, creator: creator) }
   let!(:entry) do
     FB.create(
       :raif_conversation_entry,
