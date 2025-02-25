@@ -2,6 +2,7 @@
 
 require "raif/version"
 require "raif/root"
+require "raif/languages"
 require "raif/engine"
 require "raif/configuration"
 require "raif/errors"
