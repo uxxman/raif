@@ -6,6 +6,8 @@ class Raif::Conversation < Raif::ApplicationRecord
   has_many :entries, class_name: "Raif::ConversationEntry", dependent: :destroy, foreign_key: :raif_conversation_id, inverse_of: :raif_conversation
   has_many :raif_completions, through: :entries
 
+  validates :type, inclusion: { in: Raif.config.conversation_types }
+
   def available_model_tools
     []
   end

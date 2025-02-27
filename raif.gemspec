@@ -27,4 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "json-schema"
   spec.add_dependency "rails", ">= 7.1"
   spec.add_dependency "ruby-openai"
+  spec.add_dependency "simple_form"
 end
