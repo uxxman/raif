@@ -6,7 +6,10 @@ require "raif/languages"
 require "raif/engine"
 require "raif/configuration"
 require "raif/errors"
-require "raif/llm_client"
+require "raif/llm"
+require "raif/api_adapters/base"
+require "raif/api_adapters/open_ai"
+require "raif/api_adapters/bedrock"
 require "raif/model_tool"
 
 require "openai"
@@ -14,6 +17,7 @@ require "openai"
 module Raif
   class << self
     attr_accessor :configuration
+    attr_accessor :llm_registry
 
     attr_writer :logger
   end
@@ -30,7 +34,26 @@ module Raif
     @logger ||= Rails.logger
   end
 
-  def self.available_models
-    LlmClient.available_models
+  def self.register_llm(llm_config)
+    llm = Raif::Llm.new(**llm_config)
+
+    unless llm.valid?
+      raise ArgumentError, "The LLM you tried to register is invalid: #{llm.errors.full_messages.join(", ")}"
+    end
+
+    @llm_registry ||= {}
+    @llm_registry[llm.key] = llm
+  end
+
+  def self.llm_for_key(key)
+    llm_registry[key]
+  end
+
+  def self.available_llms
+    llm_registry.values
+  end
+
+  def self.available_llm_keys
+    llm_registry.keys
   end
 end
