@@ -21,7 +21,6 @@ Gem::Specification.new do |spec|
     Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end
 
-  spec.add_dependency "attr_json"
   spec.add_dependency "aws-sdk-bedrock"
   spec.add_dependency "aws-sdk-bedrockruntime"
   spec.add_dependency "json-schema"
