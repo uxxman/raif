@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    raif (0.1.0)
+    raif (1.0.0)
       aws-sdk-bedrock
       aws-sdk-bedrockruntime
       json-schema
