@@ -51,11 +51,13 @@ module Raif
       Raif.config.validate!
     end
 
-    initializer "raif.assets" do |app|
-      app.config.assets.precompile += [
-        "raif.js",
-        "raif.css"
-      ]
+    initializer "raif.assets" do
+      if Rails.application.config.respond_to?(:assets)
+        Rails.application.config.assets.precompile += [
+          "raif.js",
+          "raif.css"
+        ]
+      end
     end
 
     initializer "raif.importmap", before: "importmap" do |app|
