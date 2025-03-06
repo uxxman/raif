@@ -12,7 +12,9 @@
   "scripts": {
     "build:css:compile:raif": "sass ./app/assets/stylesheets/raif.scss:./app/assets/builds/raif.css --no-source-map --load-path=node_modules --load-path=vendor/stylesheets",
     "build:css:prefix:raif": "postcss ./app/assets/builds/raif.css --use=autoprefixer --output=./app/assets/builds/raif.css",
-    "build:css": "yarn build:css:compile:raif && yarn build:css:prefix:raif",
+    "build:css:compile:raif_admin": "sass ./app/assets/stylesheets/raif_admin.scss:./app/assets/builds/raif_admin.css --no-source-map --load-path=node_modules --load-path=vendor/stylesheets",
+    "build:css:prefix:raif_admin": "postcss ./app/assets/builds/raif_admin.css --use=autoprefixer --output=./app/assets/builds/raif_admin.css",
+    "build:css": "yarn build:css:compile:raif && yarn build:css:prefix:raif && yarn build:css:compile:raif_admin && yarn build:css:prefix:raif_admin",
     "watch:css": "nodemon --watch ./app/assets/stylesheets/ --watch ./vendor/stylesheets/ --ext scss --exec \"yarn build:css\""
   },
   "browserslist": [
