@@ -13,6 +13,7 @@ require "raif/api_adapters/bedrock"
 require "raif/model_tool"
 
 require "openai"
+require "pagy"
 
 module Raif
   class << self
