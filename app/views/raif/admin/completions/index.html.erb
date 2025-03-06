@@ -1,0 +1,35 @@
+<h1 class="my-4"><%= t("raif.admin.common.completions") %></h1>
+
+<div class="row">
+  <div class="col-12">
+    <% if @completions.any? %>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-light">
+            <tr>
+              <th><%= t("raif.admin.common.id") %></th>
+              <th><%= t("raif.admin.common.created_at") %></th>
+              <th><%= t("raif.admin.common.creator") %></th>
+              <th><%= t("raif.admin.common.model") %></th>
+              <th><%= t("raif.admin.common.status") %></th>
+              <th><%= t("raif.admin.common.prompt_tokens") %></th>
+              <th><%= t("raif.admin.common.completion_tokens") %></th>
+              <th><%= t("raif.admin.common.prompt") %></th>
+            </tr>
+          </thead>
+          <tbody>
+            <%= render partial: "raif/admin/completions/completion", collection: @completions %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4">
+        <%== pagy_bootstrap_nav(@pagy) %>
+      </div>
+    <% else %>
+      <div class="alert alert-info">
+        <%= t("raif.admin.common.no_completions") %>
+      </div>
+    <% end %>
+  </div>
+</div>
