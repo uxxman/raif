@@ -2,6 +2,7 @@
 
 module Raif
   class ApplicationController < ::ApplicationController
+
     before_action :authorize_raif_action
 
     def raif_current_user
