@@ -12,6 +12,7 @@ require "raif/api_adapters/open_ai"
 require "raif/api_adapters/bedrock"
 require "raif/model_tool"
 
+require "faraday"
 require "openai"
 require "pagy"
 

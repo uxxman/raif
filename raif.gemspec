@@ -23,6 +23,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "aws-sdk-bedrock"
   spec.add_dependency "aws-sdk-bedrockruntime"
+  spec.add_dependency "faraday"
   spec.add_dependency "json-schema"
   spec.add_dependency "pagy"
   spec.add_dependency "rails", ">= 7.1"

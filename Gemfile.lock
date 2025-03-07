@@ -4,6 +4,7 @@ PATH
     raif (1.0.0)
       aws-sdk-bedrock
       aws-sdk-bedrockruntime
+      faraday
       json-schema
       pagy
       rails (>= 7.1)
