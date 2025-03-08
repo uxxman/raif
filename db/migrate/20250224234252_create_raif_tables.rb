@@ -52,7 +52,8 @@ class CreateRaifTables < ActiveRecord::Migration[8.0]
     end
 
     create_table :raif_model_tool_invocations do |t|
-      t.bigint :raif_completion_id, null: false
+      t.bigint :raif_completion_id
+      t.bigint :raif_agent_invocation_id
       t.string :tool_type, null: false
       t.jsonb :tool_arguments, default: {}, null: false
       t.jsonb :result, default: {}, null: false
@@ -63,6 +64,7 @@ class CreateRaifTables < ActiveRecord::Migration[8.0]
     end
 
     add_index :raif_model_tool_invocations, :raif_completion_id
+    add_index :raif_model_tool_invocations, :raif_agent_invocation_id
 
     create_table :raif_user_tool_invocations do |t|
       t.bigint :raif_conversation_entry_id, null: false
