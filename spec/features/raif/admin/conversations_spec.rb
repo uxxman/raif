@@ -36,7 +36,7 @@ RSpec.describe "Admin::Conversations", type: :feature do
 
       # Go back to index and test empty state
       visit raif.admin_conversations_path
-      Raif::Conversation.delete_all
+      Raif::Conversation.destroy_all
       visit raif.admin_conversations_path
       expect(page).to have_content(I18n.t("raif.admin.common.no_conversations"))
     end
