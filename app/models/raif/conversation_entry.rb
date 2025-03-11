@@ -12,7 +12,7 @@ class Raif::ConversationEntry < Raif::ApplicationRecord
     foreign_key: :raif_conversation_entry_id,
     inverse_of: :raif_conversation_entry
 
-  has_one :model_response, as: :source, dependent: :destroy
+  has_one :raif_model_response, as: :source, dependent: :destroy, class_name: "Raif::ModelResponse"
 
   delegate :available_model_tools, to: :raif_conversation
 
