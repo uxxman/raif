@@ -12,7 +12,7 @@ class Raif::ConversationEntry < Raif::ApplicationRecord
     foreign_key: :raif_conversation_entry_id,
     inverse_of: :raif_conversation_entry
 
-  has_one :model_response, as: :source, dependent: :destroy
+  has_one :raif_model_response, as: :source, dependent: :destroy, class_name: "Raif::ModelResponse"
 
   delegate :available_model_tools, to: :raif_conversation
 
@@ -22,16 +22,16 @@ class Raif::ConversationEntry < Raif::ApplicationRecord
   boolean_timestamp :completed_at
   boolean_timestamp :failed_at
 
-  def full_user_message
-    if raif_user_tool_invocation.present?
-      <<~MESSAGE
-        #{raif_user_tool_invocation.as_user_message}
+  before_validation :add_user_tool_invocation_to_user_message, on: :create
 
-        #{user_message}
-      MESSAGE
-    else
-      user_message
-    end.strip
+  def add_user_tool_invocation_to_user_message
+    return unless raif_user_tool_invocation.present?
+
+    self.user_message = <<~MESSAGE.strip
+      #{raif_user_tool_invocation.as_user_message}
+
+      #{user_message}
+    MESSAGE
   end
 
   def generating_response?
