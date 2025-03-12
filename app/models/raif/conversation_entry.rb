@@ -15,7 +15,7 @@ class Raif::ConversationEntry < Raif::ApplicationRecord
   has_one :raif_model_response, as: :source, dependent: :destroy, class_name: "Raif::ModelResponse"
 
   delegate :available_model_tools, to: :raif_conversation
-  delegate :system_prompt, to: :raif_model_response, allow_nil: true
+  delegate :system_prompt, :llm_model_key, to: :raif_model_response, allow_nil: true
 
   accepts_nested_attributes_for :raif_user_tool_invocation
 
