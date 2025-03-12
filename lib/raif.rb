@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "raif/version"
-require "raif/root"
 require "raif/languages"
 require "raif/engine"
 require "raif/configuration"
@@ -44,11 +43,11 @@ module Raif
     end
 
     @llm_registry ||= {}
-    @llm_registry[llm.key] = llm
+    @llm_registry[llm.key] = llm_config
   end
 
-  def self.llm_for_key(key)
-    llm_registry[key]
+  def self.llm(model_key:)
+    Raif::Llm.new(**llm_registry[model_key])
   end
 
   def self.available_llms
