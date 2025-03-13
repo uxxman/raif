@@ -4,12 +4,7 @@ module Raif
   module RspecHelpers
 
     def stub_raif_task(task_class, &block)
-      test_llm = Raif::Llm.new(
-        key: :raif_test_adapter,
-        api_name: "raif_test_adapter",
-        api_adapter: Raif::ApiAdapters::Test
-      )
-
+      test_llm = Raif.llm(model_key: :raif_test_adapter)
       test_llm.api_adapter.chat_handler = block
 
       allow(Raif.config).to receive(:llm_api_requests_enabled){ true }
@@ -17,12 +12,7 @@ module Raif
     end
 
     def stub_raif_conversation(conversation, &block)
-      test_llm = Raif::Llm.new(
-        key: :raif_test_adapter,
-        api_name: "raif_test_adapter",
-        api_adapter: Raif::ApiAdapters::Test
-      )
-
+      test_llm = Raif.llm(model_key: :raif_test_adapter)
       test_llm.api_adapter.chat_handler = block
 
       allow(Raif.config).to receive(:llm_api_requests_enabled){ true }
