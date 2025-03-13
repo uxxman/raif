@@ -17,8 +17,8 @@
 
     <small class="text-muted"><%= entry.created_at.rfc822 %></small>
 
-    <% if entry.raif_model_response.present? %>
-      <%= link_to t("raif.admin.common.model_response"), raif.admin_model_response_path(entry.raif_model_response) %>
+    <% if entry.raif_model_completion.present? %>
+      <%= link_to t("raif.admin.common.model_completion"), raif.admin_model_completion_path(entry.raif_model_completion) %>
     <% end %>
   </div>
   <div class="mb-3">
