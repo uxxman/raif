@@ -6,7 +6,6 @@ require "raif/engine"
 require "raif/configuration"
 require "raif/errors"
 require "raif/llm"
-require "raif/api_adapters/base"
 require "raif/model_tool"
 require "raif/utils"
 
@@ -46,7 +45,7 @@ module Raif
     @llm_registry[llm.key] = llm_config
   end
 
-  def self.llm(model_key:)
+  def self.llm(model_key)
     Raif::Llm.new(**llm_registry[model_key])
   end
 
