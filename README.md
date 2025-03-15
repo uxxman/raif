@@ -103,7 +103,7 @@ Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ru
 
 # Chatting with the LLM
 
-When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to `Raif::Llm#chat` will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM. 
+When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM. 
 
 Call `Raif::Llm#chat` with either a `message` string or `messages` array.:
 ```
@@ -113,7 +113,7 @@ puts model_completion.raw_response
 # => "Hello! How can I assist you today?"
 ```
 
-The `Raif::ModelCompletion` class will also handle parsing the response for you, should you ask for a different response format. You can also provide a `system_prompt` to the `chat` method:
+The `Raif::ModelCompletion` class will handle parsing the response for you, should you ask for a different response format (which can be one of `:html`, `:text`, or `:json`). You can also provide a `system_prompt` to the `chat` method:
 ```
 llm = Raif.llm(:open_ai_gpt_4o)
 messages = [
@@ -121,7 +121,10 @@ messages = [
   { role: "assistant", content: "Hello! How can I assist you today?" },
   { role: "user", content: "Can you you tell me a joke?" },
 ]
-model_completion = llm.chat(messages: messages, response_format: :json, system_prompt: "You are a helpful assistant who specializes in telling jokes. Your response should be a properly formatted JSON object containing a single `joke` key. Do not include any other text in your response outside the JSON object.")
+
+system_prompt = "You are a helpful assistant who specializes in telling jokes. Your response should be a properly formatted JSON object containing a single `joke` key. Do not include any other text in your response outside the JSON object."
+
+model_completion = llm.chat(messages: messages, response_format: :json, system_prompt: system_prompt)
 puts model_completion.raw_response
 # => ```json
 # => {
@@ -142,7 +145,7 @@ If you have a single-shot task that you want an LLM to do in your application, y
 class Raif::Tasks::DocumentSummarization < ApplicationTask
   llm_response_format :html # options are :html, :text, :json
   
-  # Any attr_accessor you define can be included as an argument to Raif::Tasks::DocumentSummarization.run
+  # Any attr_accessor you define can be included as an argument when calling `run`. E.g. Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
   attr_accessor :document
   
   def build_system_prompt
@@ -196,7 +199,7 @@ ADD SCREENSHOTS HERE.
 
 ## Controllers
 
-You can customize the controllers by creating your own that inherit from Raif's base controllers:
+You can override Raif's controllers by creating your own that inherit from Raif's base controllers:
 
 ```ruby
 class ConversationsController < Raif::ConversationsController
@@ -228,7 +231,7 @@ end
 
 ## System Prompts
 
-You can customize the system prompts for conversations and tasks:
+You can customize the intro portion of the system prompts for conversations and tasks:
 
 ```ruby
 Raif.configure do |config|
