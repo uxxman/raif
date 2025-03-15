@@ -32,7 +32,7 @@ This will:
 rails db:migrate
 ```
 
-3. Configure authentication and authorization in `config/initializers/raif.rb`:
+3. Configure authentication and authorization for Raif's controllers in `config/initializers/raif.rb`:
 
 ```ruby
 Raif.configure do |config|
@@ -96,7 +96,9 @@ Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ru
 
 ## Chatting with the LLM
 
-When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. Provide it with either a `message` string or `messages` array:
+When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to `Raif::Llm#chat` will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM. 
+
+Call `Raif::Llm#chat` with either a `message` string or `messages` array.:
 ```
 llm = Raif.llm(:open_ai_gpt_4o)
 model_completion = llm.chat(message: "Hello")
@@ -104,7 +106,7 @@ puts model_completion.raw_response
 # => "Hello! How can I assist you today?"
 ```
 
-All calls to `Raif::Llm#chat` will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM. The `Raif::ModelCompletion` class will also handle parsing the response for you, should you ask for a different response format. You can also provide a `system_prompt` to the `chat` method:
+The `Raif::ModelCompletion` class will also handle parsing the response for you, should you ask for a different response format. You can also provide a `system_prompt` to the `chat` method:
 ```
 llm = Raif.llm(:open_ai_gpt_4o)
 messages = [
@@ -112,7 +114,7 @@ messages = [
   { role: "assistant", content: "Hello! How can I assist you today?" },
   { role: "user", content: "Can you you tell me a joke?" },
 ]
-model_completion = llm.chat(messages: messages, response_format: :json, system_prompt: "You are a helpful assistant who specializes in telling jokes. Your response should be a properly formatted JSON object containing a single `joke` key. Do not include any other text in your response outside the JSON object.",)
+model_completion = llm.chat(messages: messages, response_format: :json, system_prompt: "You are a helpful assistant who specializes in telling jokes. Your response should be a properly formatted JSON object containing a single `joke` key. Do not include any other text in your response outside the JSON object.")
 puts model_completion.raw_response
 # => ```json
 # => {
