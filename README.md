@@ -25,6 +25,7 @@ rails generate raif:install
 This will:
 - Create a configuration file at `config/initializers/raif.rb`
 - Copy Raif's database migrations to your application
+- Mount Raif's engine at `/raif` in your application's `config/routes.rb` file
 
 2. Run the migrations:
 ```bash
@@ -166,6 +167,20 @@ summary = task.parsed_response
 ### Conversations
 
 ### Agents
+
+## Web Admin
+
+Raif includes a web admin interface for viewing all interactions with the LLM. Assuming you have the engine mounted at `/raif`, you can access the admin interface at `/raif/admin`.
+
+The admin interface contains sections for:
+- Model Completions
+- Tasks
+- Conversations
+- Agent Invocations
+- Model Tool Invocations
+
+ADD SCREENSHOTS HERE.
+
 
 ## Customization
 
