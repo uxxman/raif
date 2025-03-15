@@ -142,7 +142,7 @@ puts model_completion.parsed_response # will strip backticks, parse the JSON, an
 If you have a single-shot task that you want an LLM to do in your application, you should create a `Raif::Task` subclass (a generator is available), where you'll define the prompt and response format for the task and call via `Raif::Task.run`. For example, say you have a `Document` model in your app and want to have a summarization task for the LLM:
 
 ```ruby
-class Raif::Tasks::DocumentSummarization < ApplicationTask
+class Raif::Tasks::DocumentSummarization < Raif::ApplicationTask
   llm_response_format :html # options are :html, :text, :json
   
   # Any attr_accessor you define can be included as an argument when calling `run`. 
@@ -174,7 +174,7 @@ And then run the task (typically via a background job):
 ```
 document = Document.first # assumes your app defines a Document model
 user = User.first # assumes your app defines a User model
-task = Raif::Tasks::Docs::SummaryGeneration.run(document: document, creator: user)
+task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
 summary = task.parsed_response
 ```
 
