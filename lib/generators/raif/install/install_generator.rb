@@ -22,6 +22,10 @@ module Raif
       def install_migrations
         rake "raif:install:migrations"
       end
+
+      def add_engine_route
+        route 'mount Raif::Engine => "/raif"'
+      end
     end
   end
 end
