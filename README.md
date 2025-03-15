@@ -93,6 +93,80 @@ Available Bedrock models:
 
 Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/BedrockRuntime/Client.html) and AWS credentials should be configured via the AWS SDK (environment variables, IAM role, etc.)
 
+## Chatting with the LLM
+
+When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. Provide it with either a `message` string or `messages` array:
+```
+llm = Raif.llm(:open_ai_gpt_4o)
+model_completion = llm.chat(message: "Hello")
+puts model_completion.raw_response
+# => "Hello! How can I assist you today?"
+```
+
+All calls to `Raif::Llm#chat` will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM. The `Raif::ModelCompletion` class will also handle parsing the response for you, should you ask for a different response format. You can also provide a `system_prompt` to the `chat` method:
+```
+llm = Raif.llm(:open_ai_gpt_4o)
+messages = [
+  { role: "user", content: "Hello" },
+  { role: "assistant", content: "Hello! How can I assist you today?" },
+  { role: "user", content: "Can you you tell me a joke?" },
+]
+model_completion = llm.chat(messages: messages, response_format: :json, system_prompt: "You are a helpful assistant who specializes in telling jokes. Your response should be a properly formatted JSON object containing a single `joke` key. Do not include any other text in your response outside the JSON object.",)
+puts model_completion.raw_response
+# => ```json
+# => {
+# =>   "joke": "Why don't skeletons fight each other? They don't have the guts."
+# => }
+# => ```
+
+puts model_completion.parsed_response # will strip backticks, parse the JSON, and give you a Ruby hash
+# => {"joke" => "Why don't skeletons fight each other? They don't have the guts."}
+```
+
+## Key Raif Concepts
+
+### Tasks
+If you have a single-shot task that you want an LLM to do in your application, you should create a `Raif::Task` subclass (a generator is available), where you'll define the prompt and response format for the task. For example, say you have a `Document` model in your app and want to have a summarization task for the LLM:
+
+```ruby
+class Raif::Tasks::DocumentSummarization < ApplicationTask
+  llm_response_format :html # options are :html, :text, :json
+  
+  attr_accessor :document # Any attr_accessor you define can be included as an argument to Raif::Tasks::DocumentSummarization.run
+  
+  def build_system_prompt
+    "You are an assistant with expertise in summarizing detailed articles into clear and concise language.
+  end
+
+  def build_prompt
+    <<~PROMPT
+      Consider the following information:
+
+      Title: #{document.title}
+      Text:
+      ```
+      #{document.content}
+      ```
+
+      Your task is to read the provided article and associated information, and summarize the article concisely and clearly in approximately 1 paragraph. Your summary should include all of the key points, views, and arguments of the text, and should only include facts referenced in the text directly. Do not add any inferences, speculations, or analysis of your own, and do not exaggerate or overstate facts. If you quote directly from the article, include quotation marks. If the text does not appear to represent the title, please return the text "Unable to generate summary" and nothing else.
+    PROMPT
+  end
+
+end
+```
+
+And then run the task (typically via a background job):
+```
+document = Document.first # assumes your app defines a Document model
+user = User.first # assumes your app defines a User model
+task = Raif::Tasks::Docs::SummaryGeneration.run(document: document, creator: user)
+summary = task.parsed_response
+```
+
+### Conversations
+
+### Agents
+
 ## Customization
 
 ### Controllers
