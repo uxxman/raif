@@ -145,7 +145,8 @@ If you have a single-shot task that you want an LLM to do in your application, y
 class Raif::Tasks::DocumentSummarization < ApplicationTask
   llm_response_format :html # options are :html, :text, :json
   
-  # Any attr_accessor you define can be included as an argument when calling `run`. E.g. Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
+  # Any attr_accessor you define can be included as an argument when calling `run`. 
+  # E.g. Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
   attr_accessor :document
   
   def build_system_prompt
