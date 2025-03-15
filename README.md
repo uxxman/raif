@@ -9,7 +9,7 @@ Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered feature
 
 Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to power [ARC](https://www.arcanalysis.ai), an AI-powered research & analysis platform.
 
-## Installation
+# Installation
 
 Add this line to your application's Gemfile:
 
@@ -22,7 +22,7 @@ And then execute:
 bundle install
 ```
 
-## Setup
+# Setup
 
 1. Run the install generator:
 ```bash
@@ -55,7 +55,7 @@ end
 
 4. Configure your LLM providers. You'll need at least one of:
 
-### OpenAI
+## OpenAI
 ```ruby
 Raif.configure do |config|
   config.open_ai_api_key = ENV["OPENAI_API_KEY"]
@@ -69,7 +69,7 @@ Available OpenAI models:
 - `open_ai_gpt_4o`
 - `open_ai_gpt_3_5_turbo`
 
-### Anthropic Claude
+## Anthropic Claude
 ```ruby
 Raif.configure do |config|
   config.anthropic_api_key = ENV["ANTHROPIC_API_KEY"]
@@ -84,7 +84,7 @@ Available Anthropic models:
 - `anthropic_claude_3_5_haiku`
 - `anthropic_claude_3_opus`
 
-### AWS Bedrock (Claude)
+## AWS Bedrock (Claude)
 ```ruby
 Raif.configure do |config|
   config.anthropic_bedrock_models_enabled = true
@@ -101,7 +101,7 @@ Available Bedrock models:
 
 Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/BedrockRuntime/Client.html) and AWS credentials should be configured via the AWS SDK (environment variables, IAM role, etc.)
 
-## Chatting with the LLM
+# Chatting with the LLM
 
 When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to `Raif::Llm#chat` will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM. 
 
@@ -133,19 +133,20 @@ puts model_completion.parsed_response # will strip backticks, parse the JSON, an
 # => {"joke" => "Why don't skeletons fight each other? They don't have the guts."}
 ```
 
-## Key Raif Concepts
+# Key Raif Concepts
 
-### Tasks
-If you have a single-shot task that you want an LLM to do in your application, you should create a `Raif::Task` subclass (a generator is available), where you'll define the prompt and response format for the task. For example, say you have a `Document` model in your app and want to have a summarization task for the LLM:
+## Tasks
+If you have a single-shot task that you want an LLM to do in your application, you should create a `Raif::Task` subclass (a generator is available), where you'll define the prompt and response format for the task and call via `Raif::Task.run`. For example, say you have a `Document` model in your app and want to have a summarization task for the LLM:
 
 ```ruby
 class Raif::Tasks::DocumentSummarization < ApplicationTask
   llm_response_format :html # options are :html, :text, :json
   
-  attr_accessor :document # Any attr_accessor you define can be included as an argument to Raif::Tasks::DocumentSummarization.run
+  # Any attr_accessor you define can be included as an argument to Raif::Tasks::DocumentSummarization.run
+  attr_accessor :document
   
   def build_system_prompt
-    "You are an assistant with expertise in summarizing detailed articles into clear and concise language.
+    "You are an assistant with expertise in summarizing detailed articles into clear and concise language."
   end
 
   def build_prompt
@@ -173,11 +174,11 @@ task = Raif::Tasks::Docs::SummaryGeneration.run(document: document, creator: use
 summary = task.parsed_response
 ```
 
-### Conversations
+## Conversations
 
-### Agents
+## Agents
 
-## Web Admin
+# Web Admin
 
 Raif includes a web admin interface for viewing all interactions with the LLM. Assuming you have the engine mounted at `/raif`, you can access the admin interface at `/raif/admin`.
 
@@ -191,9 +192,9 @@ The admin interface contains sections for:
 ADD SCREENSHOTS HERE.
 
 
-## Customization
+# Customization
 
-### Controllers
+## Controllers
 
 You can customize the controllers by creating your own that inherit from Raif's base controllers:
 
@@ -215,7 +216,7 @@ Raif.configure do |config|
 end
 ```
 
-### Models
+## Models
 
 By default, Raif models inherit from `ApplicationRecord`. You can change this:
 
@@ -225,7 +226,7 @@ Raif.configure do |config|
 end
 ```
 
-### System Prompts
+## System Prompts
 
 You can customize the system prompts for conversations and tasks:
 
@@ -236,6 +237,6 @@ Raif.configure do |config|
 end
 ```
 
-## License
+# License
 
 The gem is available as open source under the terms of the MIT License.
