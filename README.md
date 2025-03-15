@@ -230,6 +230,20 @@ Raif.configure do |config|
 end
 ```
 
+## Views
+
+You can customize Raif's views by copying them to your application and modifying them. To copy the conversation-related views, run:
+
+```bash
+rails generate raif:views
+```
+
+This will copy all conversation and conversation entry views to your application in:
+- `app/views/raif/conversations/`
+- `app/views/raif/conversation_entries/`
+
+These views will automatically override Raif's default views. You can customize them to match your application's look and feel while maintaining the same functionality.
+
 ## System Prompts
 
 You can customize the intro portion of the system prompts for conversations and tasks:
