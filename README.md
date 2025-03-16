@@ -150,7 +150,9 @@ class Raif::Tasks::DocumentSummarization < Raif::ApplicationTask
   attr_accessor :document
   
   def build_system_prompt
-    "You are an assistant with expertise in summarizing detailed articles into clear and concise language."
+    sp = "You are an assistant with expertise in summarizing detailed articles into clear and concise language."
+    sp += system_prompt_language_preference if requested_language_key.present?
+    sp
   end
 
   def build_prompt
@@ -176,6 +178,17 @@ document = Document.first # assumes your app defines a Document model
 user = User.first # assumes your app defines a User model
 task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
 summary = task.parsed_response
+```
+
+You can also pass in a `requested_language_key` to the `run` method. When this is provided, Raif will add a line to the system prompt requesting that the LLM respond in the specified language:
+```
+task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user, requested_language_key: "es")
+```
+
+Would produce a system prompt that looks like this:
+```
+You are an assistant with expertise in summarizing detailed articles into clear and concise language.
+You're collaborating with teammate who speaks Spanish. Please respond in Spanish.
 ```
 
 To generate a new task, you can use the generator:
