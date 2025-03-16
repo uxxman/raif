@@ -264,12 +264,13 @@ These views will automatically override Raif's default views. You can customize 
 
 ## System Prompts
 
-You can customize the intro portion of the system prompts for conversations and tasks:
+If you don't want to override the system prompt entirely in your task/conversation/agent subclasses, you can customize the intro portion of the system prompts for conversations and tasks:
 
 ```ruby
 Raif.configure do |config|
   config.conversation_system_prompt_intro = "You are a helpful assistant who specializes in customer support."
   config.task_system_prompt_intro = "You are a helpful assistant who specializes in data analysis."
+  config.agent_system_prompt_intro = "You are an intelligent assistant that follows the ReAct (Reasoning + Acting) framework to complete tasks step by step using tool calls."
 end
 ```
 
