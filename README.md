@@ -103,7 +103,7 @@ Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ru
 
 # Chatting with the LLM
 
-When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM. 
+When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM.
 
 Call `Raif::Llm#chat` with either a `message` string or `messages` array.:
 ```
@@ -176,6 +176,11 @@ document = Document.first # assumes your app defines a Document model
 user = User.first # assumes your app defines a User model
 task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
 summary = task.parsed_response
+```
+
+To generate a new task, you can use the generator:
+```bash
+rails generate raif:task DocumentSummarization --response-format html
 ```
 
 ## Conversations
