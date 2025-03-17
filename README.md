@@ -103,7 +103,7 @@ Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ru
 
 # Chatting with the LLM
 
-When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM. 
+When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM.
 
 Call `Raif::Llm#chat` with either a `message` string or `messages` array.:
 ```
@@ -150,7 +150,9 @@ class Raif::Tasks::DocumentSummarization < Raif::ApplicationTask
   attr_accessor :document
   
   def build_system_prompt
-    "You are an assistant with expertise in summarizing detailed articles into clear and concise language."
+    sp = "You are an assistant with expertise in summarizing detailed articles into clear and concise language."
+    sp += system_prompt_language_preference if requested_language_key.present?
+    sp
   end
 
   def build_prompt
@@ -176,6 +178,22 @@ document = Document.first # assumes your app defines a Document model
 user = User.first # assumes your app defines a User model
 task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
 summary = task.parsed_response
+```
+
+You can also pass in a `requested_language_key` to the `run` method. When this is provided, Raif will add a line to the system prompt requesting that the LLM respond in the specified language:
+```
+task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user, requested_language_key: "es")
+```
+
+Would produce a system prompt that looks like this:
+```
+You are an assistant with expertise in summarizing detailed articles into clear and concise language.
+You're collaborating with teammate who speaks Spanish. Please respond in Spanish.
+```
+
+To generate a new task, you can use the generator:
+```bash
+rails generate raif:task DocumentSummarization --response-format html
 ```
 
 ## Conversations
@@ -246,14 +264,63 @@ These views will automatically override Raif's default views. You can customize 
 
 ## System Prompts
 
-You can customize the intro portion of the system prompts for conversations and tasks:
+If you don't want to override the system prompt entirely in your task/conversation/agent subclasses, you can customize the intro portion of the system prompts for conversations and tasks:
 
 ```ruby
 Raif.configure do |config|
   config.conversation_system_prompt_intro = "You are a helpful assistant who specializes in customer support."
   config.task_system_prompt_intro = "You are a helpful assistant who specializes in data analysis."
+  config.agent_system_prompt_intro = "You are an intelligent assistant that follows the ReAct (Reasoning + Acting) framework to complete tasks step by step using tool calls."
 end
 ```
+
+# Testing
+
+Raif includes RSpec helpers and FactoryBot factories to help with testing in your application.
+
+To use the helpers, add the following to your `rails_helper.rb`:
+
+```ruby
+require "raif/rspec"
+
+RSpec.configure do |config|
+  config.include Raif::RspecHelpers
+end
+```
+
+You can then use the helpers to stub LLM calls:
+
+```ruby
+it "stubs a document summarization task" do
+  # the messages argument is the array of messages sent to the LLM. It will look something like:
+  # [{"role" => "user", "content" => "The prompt from the Raif::Tasks::DocumentSummarization task" }]
+  stub_raif_task(Raif::Tasks::DocumentSummarization) do |messages|
+    "Stub out the response from the LLM"
+  end
+
+  user = FactoryBot.create(:user) # assumes you have a User model & factory
+  document = FactoryBot.create(:document) # assumes you have a Document model & factory
+  task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
+
+  expect(task.response).to eq("Stub out the response from the LLM")
+end
+
+it "stubs a conversation" do
+  user = FactoryBot.create(:user) # assumes you have a User model & factory
+  conversation = FactoryBot.create(:raif_test_conversation, creator: user)
+  conversation_entry = FactoryBot.create(:raif_conversation_entry, raif_conversation: conversation, creator: user)
+
+  stub_raif_conversation(conversation) do |messages|
+    { "message" : "Hello" }.to_json
+  end
+
+  conversation_entry.process_entry!
+  expect(conversation_entry.reload).to be_completed
+  expect(conversation_entry.model_response_message).to eq("Hello")
+end
+```
+
+Raif also provides FactoryBot factories for its models. You can use them to create Raif models for testing. If you're using `factory_bot_rails`, they will be added automatically to `config.factory_bot.definition_file_paths`. The available factories can be found [here](https://github.com/CultivateLabs/raif/tree/main/spec/factories/shared).
 
 # License
 
