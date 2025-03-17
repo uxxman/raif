@@ -274,6 +274,54 @@ Raif.configure do |config|
 end
 ```
 
+# Testing
+
+Raif includes RSpec helpers and FactoryBot factories to help with testing in your application.
+
+To use the helpers, add the following to your `rails_helper.rb`:
+
+```ruby
+require "raif/rspec"
+
+RSpec.configure do |config|
+  config.include Raif::RspecHelpers
+end
+```
+
+You can then use the helpers to stub LLM calls:
+
+```ruby
+it "stubs a document summarization task" do
+  # the messages argument is the array of messages sent to the LLM. It will look something like:
+  # [{"role" => "user", "content" => "The prompt from the Raif::Tasks::DocumentSummarization task" }]
+  stub_raif_task(Raif::Tasks::DocumentSummarization) do |messages|
+    "Stub out the response from the LLM"
+  end
+
+  user = FactoryBot.create(:user) # assumes you have a User model & factory
+  document = FactoryBot.create(:document) # assumes you have a Document model & factory
+  task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
+
+  expect(task.response).to eq("Stub out the response from the LLM")
+end
+
+it "stubs a conversation" do
+  user = FactoryBot.create(:user) # assumes you have a User model & factory
+  conversation = FactoryBot.create(:raif_test_conversation, creator: user)
+  conversation_entry = FactoryBot.create(:raif_conversation_entry, raif_conversation: conversation, creator: user)
+
+  stub_raif_conversation(conversation) do |messages|
+    { "message" : "Hello" }.to_json
+  end
+
+  conversation_entry.process_entry!
+  expect(conversation_entry.reload).to be_completed
+  expect(conversation_entry.model_response_message).to eq("Hello")
+end
+```
+
+Raif also provides FactoryBot factories for its models. You can use them to create Raif models for testing. If you're using `factory_bot_rails`, they will be added automatically to `config.factory_bot.definition_file_paths`. The available factories can be found [here](https://github.com/CultivateLabs/raif/tree/main/spec/factories/shared).
+
 # License
 
 The gem is available as open source under the terms of the MIT License.
