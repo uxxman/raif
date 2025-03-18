@@ -302,7 +302,7 @@ it "stubs a document summarization task" do
   document = FactoryBot.create(:document) # assumes you have a Document model & factory
   task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
 
-  expect(task.response).to eq("Stub out the response from the LLM")
+  expect(task.raw_response).to eq("Stub out the response from the LLM")
 end
 
 it "stubs a conversation" do
