@@ -62,6 +62,8 @@ module Raif
     config.after_initialize do
       next unless Rails.env.test?
 
+      Raif.config.conversation_types += ["Raif::TestConversation"]
+
       require "#{Raif::Engine.root}/spec/support/test_completion"
       Raif.register_llm(model_completion_type: Raif::ModelCompletions::Test, key: :raif_test_llm, api_name: "raif-test-llm")
     end
