@@ -198,6 +198,46 @@ rails generate raif:task DocumentSummarization --response-format html
 
 ## Conversations
 
+Raif provides `Raif::Conversation` and `Raif::ConversationEntry` models that you can use to  provide an LLM-powered chat interface. It also provides controllers and views for the conversation interface.
+
+This feature utilizes Turbo Streams, Stimulus controllers, and ActiveJob, so your application must have those set up first. 
+
+To use it in your application, first set up the css and javascript in your application. In the `<head>` section of your layout file:
+```erb
+<%= stylesheet_link_tag "raif" %>
+```
+
+In an app using import maps, add the following to your `application.js` file:
+```js
+import "raif"
+```
+
+In a controller serving the conversation view:
+```ruby
+class ExampleConversationController < ApplicationController
+  def show
+    @conversation = Raif::Conversation.where(creator: current_user).order(created_at: :desc).first
+
+    if @conversation.nil?
+      @conversation = Raif::Conversation.new(creator: current_user)
+      @conversation.save!
+    end
+  end
+end
+```
+
+And then in the view where you'd like to display the conversation interface:
+```erb
+<%= raif_conversation(@conversation) %>
+```
+
+If your app already includes Bootstrap styles, this will render a conversation interface that looks something like:
+
+![Conversation Interface](./docs/screenshots/conversation_interface.png)
+
+If your app does not include Bootstrap, you can [override the views](#views) to update styles.
+
+
 ## Agents
 
 # Web Admin
