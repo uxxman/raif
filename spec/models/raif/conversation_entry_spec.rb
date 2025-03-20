@@ -24,8 +24,8 @@ RSpec.describe Raif::ConversationEntry, type: :model do
             {
               "message" : "Hello",
               "tool" : {
-                "name": "wikipedia_search",
-                "arguments": { "query": "Paris" }
+                "name": "test_model",
+                "arguments": [{ "title": "foo", "description": "bar" }]
               }
             }
           JSON
@@ -37,8 +37,8 @@ RSpec.describe Raif::ConversationEntry, type: :model do
         expect(entry.reload).to be_completed
         expect(entry.model_response_message).to eq("Hello")
         expect(entry.raif_model_tool_invocations.count).to eq(1)
-        expect(entry.raif_model_tool_invocations.first.tool_name).to eq("wikipedia_search")
-        expect(entry.raif_model_tool_invocations.first.tool_arguments).to eq("query" => "Paris")
+        expect(entry.raif_model_tool_invocations.first.tool_name).to eq("test_model")
+        expect(entry.raif_model_tool_invocations.first.tool_arguments).to eq([{ "title" => "foo", "description" => "bar" }])
       end
     end
 
