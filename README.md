@@ -240,13 +240,13 @@ If your app does not include Bootstrap, you can [override the views](#views) to 
 
 ## Agents
 
-Raif also provides `Raif::AgentInvocation`, which implements a ReAct-style agent loop:
+Raif also provides `Raif::AgentInvocation`, which implements a ReAct-style agent loop using [tool calls](#model-tools):
 
 ```ruby
 user = User.first
 agent_invocation = Raif::AgentInvocation.new(
   task: "What is Jimmy Buffet's birthday?", 
-  tools: [Raif::ModelTools::WikipediaSearchTool, Raif::ModelTools::FetchUrlTool], 
+  tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl], 
   creator: user
 )
 
@@ -262,7 +262,22 @@ agent_invocation.run! do |conversation_history_entry|
 end
 ```
 
+On each step of the agent loop, an entry will be added to the `Raif::AgentInvocation#conversation_history`. You can use this to monitor progress.
+
 ## Model Tools
+
+Raif provides a `Raif::ModelTool` base class that you can use to create custom tools for your agents and conversations. To create a custom tool, you can can call the generator:
+
+You can create your own model tools to provide to the LLM using the generator:
+```bash
+rails generate raif:model_tool GoogleSearch
+```
+
+This will create a new model tool in `app/models/raif/model_tools/google_search.rb`.
+
+[`Raif::ModelTools::WikipediaSearch`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search.rb) and [`Raif::ModelTools::FetchUrl`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url.rb) tools are included as examples.
+
+Tools can be used in both `Raif::AgentInvocation` and `Raif::Conversation` objects.
 
 # Web Admin
 
