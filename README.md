@@ -362,6 +362,20 @@ end
 
 Raif also provides FactoryBot factories for its models. You can use them to create Raif models for testing. If you're using `factory_bot_rails`, they will be added automatically to `config.factory_bot.definition_file_paths`. The available factories can be found [here](https://github.com/CultivateLabs/raif/tree/main/spec/factories/shared).
 
+# Demo App
+
+Raif includes a [demo app](https://github.com/CultivateLabs/raif_demo) that you can use to see the engine in action. To run the demo app:
+
+```bash
+git clone git@github.com:CultivateLabs/raif_demo.git
+cd raif_demo
+bundle install
+bin/rails db:create db:prepare
+bin/rails s
+```
+
+You can then access the app at [http://localhost:3000](http://localhost:3000).
+
 # License
 
 The gem is available as open source under the terms of the MIT License.
