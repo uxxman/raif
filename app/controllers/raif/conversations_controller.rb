@@ -29,22 +29,26 @@ private
     raif_conversation_type.newest_first.where(creator: raif_current_user)
   end
 
+  def conversation_type_param
+    params[:conversation_type].presence || "Raif::Conversation"
+  end
+
   def validate_conversation_type
-    head :bad_request unless Raif.config.conversation_types.include?(params[:conversation_type])
+    head :bad_request unless Raif.config.conversation_types.include?(conversation_type_param)
   end
 
   def raif_conversation_type
     @raif_conversation_type ||= begin
-      unless Raif.config.conversation_types.include?(params[:conversation_type])
-        raise Raif::Errors::InvalidConverastionTypeError,
-          "Invalid Raif conversation type - not in Raif.config.conversation_types: #{params[:conversation_type]}"
+      unless Raif.config.conversation_types.include?(conversation_type_param)
+        raise Raif::Errors::InvalidConversationTypeError,
+          "Invalid Raif conversation type - not in Raif.config.conversation_types: #{conversation_type_param}"
       end
 
-      conversation_type = params[:conversation_type].constantize
+      conversation_type = conversation_type_param.constantize
 
-      unless conversation_type.ancestors.include?(Raif::Conversation)
-        raise Raif::Errors::InvalidConverastionTypeError,
-          "Invalid Raif conversation type - not a descendant of Raif::Conversation: #{params[:conversation_type]}"
+      unless conversation_type == Raif::Conversation || conversation_type.ancestors.include?(Raif::Conversation)
+        raise Raif::Errors::InvalidConversationTypeError,
+          "Invalid Raif conversation type - not a descendant of Raif::Conversation: #{conversation_type_param}"
       end
 
       conversation_type

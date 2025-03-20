@@ -58,7 +58,8 @@ module Raif
 
       populate_prompts
       messages = [{ "role" => "user", "content" => prompt }]
-      self.raif_model_completion = llm.chat(messages: messages, source: self, system_prompt: system_prompt, response_format: response_format.to_sym)
+      mc = llm.chat(messages: messages, source: self, system_prompt: system_prompt, response_format: response_format.to_sym)
+      self.raif_model_completion = mc.becomes(Raif::ModelCompletion)
 
       update(raw_response: raif_model_completion.raw_response)
 
