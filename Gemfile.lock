@@ -12,7 +12,7 @@ PATH
       rails (>= 7.1)
       reverse_markdown
       ruby-openai
-      simple_form
+      turbo-rails
 
 GEM
   remote: https://rubygems.org/
@@ -382,9 +382,6 @@ GEM
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
     shellany (0.0.1)
-    simple_form (5.3.1)
-      actionpack (>= 5.2)
-      activemodel (>= 5.2)
     smart_properties (1.17.0)
     stringio (3.1.5)
     terminal-table (4.0.0)
@@ -431,7 +428,6 @@ DEPENDENCIES
   raif!
   rspec-rails
   rubocop-shopify
-  turbo-rails
 
 BUNDLED WITH
    2.5.14
