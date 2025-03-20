@@ -240,6 +240,30 @@ If your app does not include Bootstrap, you can [override the views](#views) to 
 
 ## Agents
 
+Raif also provides `Raif::AgentInvocation`, which implements a ReAct-style agent loop:
+
+```ruby
+user = User.first
+agent_invocation = Raif::AgentInvocation.new(
+  task: "What is Jimmy Buffet's birthday?", 
+  tools: [Raif::ModelTools::WikipediaSearchTool, Raif::ModelTools::FetchUrlTool], 
+  creator: user
+)
+
+# conversation_history_entry will look something like:
+# { "role" => "user", "content" => "What is Jimmy Buffet's birthday?" }
+agent_invocation.run! do |conversation_history_entry|
+  Turbo::StreamsChannel.broadcast_append_to(
+    :my_agent_channel,
+    target: "agent-progress",
+    partial: "my_partial_displaying_agent_progress",
+    locals: { agent_invocation: agent_invocation, conversation_history_entry: conversation_history_entry }
+  )
+end
+```
+
+## Model Tools
+
 # Web Admin
 
 Raif includes a web admin interface for viewing all interactions with the LLM. Assuming you have the engine mounted at `/raif`, you can access the admin interface at `/raif/admin`.
