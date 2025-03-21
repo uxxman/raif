@@ -10,6 +10,27 @@ Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered feature
 
 Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to power [ARC](https://www.arcanalysis.ai), an AI-powered research & analysis platform.
 
+## Table of Contents
+- [Setup](#setup)
+  - [OpenAI](#openai)
+  - [Anthropic Claude](#anthropic-claude)
+  - [AWS Bedrock (Claude)](#aws-bedrock-claude)
+- [Chatting with the LLM](#chatting-with-the-llm)
+- [Key Raif Concepts](#key-raif-concepts)
+  - [Tasks](#tasks)
+  - [Conversations](#conversations)
+  - [Agents](#agents)
+  - [Model Tools](#model-tools)
+- [Web Admin](#web-admin)
+- [Customization](#customization)
+  - [Controllers](#controllers)
+  - [Models](#models)
+  - [Views](#views)
+  - [System Prompts](#system-prompts)
+- [Testing](#testing)
+- [Demo App](#demo-app)
+- [License](#license)
+
 # Setup
 
 Add this line to your application's Gemfile:
