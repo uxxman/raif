@@ -19,7 +19,3 @@ development_mysql: &mysql
   password: 
   host: localhost
   database: raif_dummy_development_mysql
-  
-test_mysql:
-  <<: *mysql
-  database: raif_dummy_test_mysql
