@@ -103,7 +103,7 @@ Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ru
 
 # Chatting with the LLM
 
-When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM. 
+When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM.
 
 Call `Raif::Llm#chat` with either a `message` string or `messages` array.:
 ```
@@ -150,7 +150,9 @@ class Raif::Tasks::DocumentSummarization < Raif::ApplicationTask
   attr_accessor :document
   
   def build_system_prompt
-    "You are an assistant with expertise in summarizing detailed articles into clear and concise language."
+    sp = "You are an assistant with expertise in summarizing detailed articles into clear and concise language."
+    sp += system_prompt_language_preference if requested_language_key.present?
+    sp
   end
 
   def build_prompt
@@ -178,9 +180,104 @@ task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
 summary = task.parsed_response
 ```
 
+You can also pass in a `requested_language_key` to the `run` method. When this is provided, Raif will add a line to the system prompt requesting that the LLM respond in the specified language:
+```
+task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user, requested_language_key: "es")
+```
+
+Would produce a system prompt that looks like this:
+```
+You are an assistant with expertise in summarizing detailed articles into clear and concise language.
+You're collaborating with teammate who speaks Spanish. Please respond in Spanish.
+```
+
+To generate a new task, you can use the generator:
+```bash
+rails generate raif:task DocumentSummarization --response-format html
+```
+
 ## Conversations
 
+Raif provides `Raif::Conversation` and `Raif::ConversationEntry` models that you can use to  provide an LLM-powered chat interface. It also provides controllers and views for the conversation interface.
+
+This feature utilizes Turbo Streams, Stimulus controllers, and ActiveJob, so your application must have those set up first. 
+
+To use it in your application, first set up the css and javascript in your application. In the `<head>` section of your layout file:
+```erb
+<%= stylesheet_link_tag "raif" %>
+```
+
+In an app using import maps, add the following to your `application.js` file:
+```js
+import "raif"
+```
+
+In a controller serving the conversation view:
+```ruby
+class ExampleConversationController < ApplicationController
+  def show
+    @conversation = Raif::Conversation.where(creator: current_user).order(created_at: :desc).first
+
+    if @conversation.nil?
+      @conversation = Raif::Conversation.new(creator: current_user)
+      @conversation.save!
+    end
+  end
+end
+```
+
+And then in the view where you'd like to display the conversation interface:
+```erb
+<%= raif_conversation(@conversation) %>
+```
+
+If your app already includes Bootstrap styles, this will render a conversation interface that looks something like:
+
+![Conversation Interface](./docs/screenshots/conversation_interface.png)
+
+If your app does not include Bootstrap, you can [override the views](#views) to update styles.
+
+
 ## Agents
+
+Raif also provides `Raif::AgentInvocation`, which implements a ReAct-style agent loop using [tool calls](#model-tools):
+
+```ruby
+user = User.first
+agent_invocation = Raif::AgentInvocation.new(
+  task: "What is Jimmy Buffet's birthday?", 
+  tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl], 
+  creator: user
+)
+
+# conversation_history_entry will look something like:
+# { "role" => "user", "content" => "What is Jimmy Buffet's birthday?" }
+agent_invocation.run! do |conversation_history_entry|
+  Turbo::StreamsChannel.broadcast_append_to(
+    :my_agent_channel,
+    target: "agent-progress",
+    partial: "my_partial_displaying_agent_progress",
+    locals: { agent_invocation: agent_invocation, conversation_history_entry: conversation_history_entry }
+  )
+end
+```
+
+On each step of the agent loop, an entry will be added to the `Raif::AgentInvocation#conversation_history`. You can use this to monitor progress.
+
+## Model Tools
+
+Raif provides a `Raif::ModelTool` base class that you can use to create custom tools for your agents and conversations. To create a custom tool, you can can call the generator:
+
+You can create your own model tools to provide to the LLM using the generator:
+```bash
+rails generate raif:model_tool GoogleSearch
+```
+
+This will create a new model tool in `app/models/raif/model_tools/google_search.rb`.
+
+[`Raif::ModelTools::WikipediaSearch`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search.rb) and [`Raif::ModelTools::FetchUrl`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url.rb) tools are included as examples.
+
+Tools can be used in both `Raif::AgentInvocation` and `Raif::Conversation` objects.
 
 # Web Admin
 
@@ -246,14 +343,77 @@ These views will automatically override Raif's default views. You can customize 
 
 ## System Prompts
 
-You can customize the intro portion of the system prompts for conversations and tasks:
+If you don't want to override the system prompt entirely in your task/conversation/agent subclasses, you can customize the intro portion of the system prompts for conversations and tasks:
 
 ```ruby
 Raif.configure do |config|
   config.conversation_system_prompt_intro = "You are a helpful assistant who specializes in customer support."
   config.task_system_prompt_intro = "You are a helpful assistant who specializes in data analysis."
+  config.agent_system_prompt_intro = "You are an intelligent assistant that follows the ReAct (Reasoning + Acting) framework to complete tasks step by step using tool calls."
 end
 ```
+
+# Testing
+
+Raif includes RSpec helpers and FactoryBot factories to help with testing in your application.
+
+To use the helpers, add the following to your `rails_helper.rb`:
+
+```ruby
+require "raif/rspec"
+
+RSpec.configure do |config|
+  config.include Raif::RspecHelpers
+end
+```
+
+You can then use the helpers to stub LLM calls:
+
+```ruby
+it "stubs a document summarization task" do
+  # the messages argument is the array of messages sent to the LLM. It will look something like:
+  # [{"role" => "user", "content" => "The prompt from the Raif::Tasks::DocumentSummarization task" }]
+  stub_raif_task(Raif::Tasks::DocumentSummarization) do |messages|
+    "Stub out the response from the LLM"
+  end
+
+  user = FactoryBot.create(:user) # assumes you have a User model & factory
+  document = FactoryBot.create(:document) # assumes you have a Document model & factory
+  task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
+
+  expect(task.raw_response).to eq("Stub out the response from the LLM")
+end
+
+it "stubs a conversation" do
+  user = FactoryBot.create(:user) # assumes you have a User model & factory
+  conversation = FactoryBot.create(:raif_test_conversation, creator: user)
+  conversation_entry = FactoryBot.create(:raif_conversation_entry, raif_conversation: conversation, creator: user)
+
+  stub_raif_conversation(conversation) do |messages|
+    { "message" : "Hello" }.to_json
+  end
+
+  conversation_entry.process_entry!
+  expect(conversation_entry.reload).to be_completed
+  expect(conversation_entry.model_response_message).to eq("Hello")
+end
+```
+
+Raif also provides FactoryBot factories for its models. You can use them to create Raif models for testing. If you're using `factory_bot_rails`, they will be added automatically to `config.factory_bot.definition_file_paths`. The available factories can be found [here](https://github.com/CultivateLabs/raif/tree/main/spec/factories/shared).
+
+# Demo App
+
+Raif includes a [demo app](https://github.com/CultivateLabs/raif_demo) that you can use to see the engine in action. To run the demo app:
+
+```bash
+git clone git@github.com:CultivateLabs/raif_demo.git
+cd raif_demo
+bundle install
+bin/rails db:create db:prepare
+bin/rails s
+```
+
+You can then access the app at [http://localhost:3000](http://localhost:3000).
 
 # License
 

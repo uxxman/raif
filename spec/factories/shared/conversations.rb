@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-Raif.config.conversation_types += ["Raif::TestConversation"]
-
 FactoryBot.define do
   factory :raif_conversation, class: "Raif::Conversation" do
     trait :with_entries do
