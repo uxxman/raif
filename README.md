@@ -5,11 +5,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 
-Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered features to your Rails apps, such as tasks, conversations, and agents.  It supports for multiple LLM providers including OpenAI, Anthropic Claude, and AWS Bedrock (with more coming soon).
+Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered features to your Rails apps, such as [tasks](#tasks), [conversations](#conversations), and [agents](#agents).  It supports for multiple LLM providers including [OpenAI](#openai), [Anthropic Claude](#anthropic-claude), and [AWS Bedrock](#aws-bedrock).
 
 Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to power [ARC](https://www.arcanalysis.ai), an AI-powered research & analysis platform.
 
-# Installation
+# Setup
 
 Add this line to your application's Gemfile:
 
@@ -22,9 +22,7 @@ And then execute:
 bundle install
 ```
 
-# Setup
-
-1. Run the install generator:
+Run the install generator:
 ```bash
 rails generate raif:install
 ```
@@ -34,12 +32,12 @@ This will:
 - Copy Raif's database migrations to your application
 - Mount Raif's engine at `/raif` in your application's `config/routes.rb` file
 
-2. Run the migrations:
+Run the migrations:
 ```bash
 rails db:migrate
 ```
 
-3. Configure authentication and authorization for Raif's controllers in `config/initializers/raif.rb`:
+Configure authentication and authorization for Raif's controllers in `config/initializers/raif.rb`, if you're using the [conversations](#conversations) feature or Raif's [web admin](#web-admin):
 
 ```ruby
 Raif.configure do |config|
@@ -53,13 +51,12 @@ Raif.configure do |config|
 end
 ```
 
-4. Configure your LLM providers. You'll need at least one of:
+Configure your LLM providers. You'll need at least one of:
 
 ## OpenAI
 ```ruby
 Raif.configure do |config|
   config.open_ai_api_key = ENV["OPENAI_API_KEY"]
-  config.open_ai_models_enabled = true
   config.default_llm_model_key = "open_ai_gpt_4o"
 end
 ```
@@ -73,7 +70,6 @@ Available OpenAI models:
 ```ruby
 Raif.configure do |config|
   config.anthropic_api_key = ENV["ANTHROPIC_API_KEY"]
-  config.anthropic_models_enabled = true
   config.default_llm_model_key = "anthropic_claude_3_5_sonnet"
 end
 ```
@@ -88,7 +84,7 @@ Available Anthropic models:
 ```ruby
 Raif.configure do |config|
   config.anthropic_bedrock_models_enabled = true
-  config.aws_bedrock_region = "us-east-1" # or your preferred region
+  config.aws_bedrock_region = "us-east-1"
   config.default_llm_model_key = "bedrock_claude_3_5_sonnet"
 end
 ```
@@ -103,11 +99,11 @@ Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ru
 
 # Chatting with the LLM
 
-When using Raif, it's generally recommended that you use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM.
+When using Raif, it's often useful to use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM which can be viewed in the [web admin](#web-admin).
 
 Call `Raif::Llm#chat` with either a `message` string or `messages` array.:
 ```
-llm = Raif.llm(:open_ai_gpt_4o)
+llm = Raif.llm(:open_ai_gpt_4o) # will return a Raif::Llm instance
 model_completion = llm.chat(message: "Hello")
 puts model_completion.raw_response
 # => "Hello! How can I assist you today?"
@@ -139,7 +135,7 @@ puts model_completion.parsed_response # will strip backticks, parse the JSON, an
 # Key Raif Concepts
 
 ## Tasks
-If you have a single-shot task that you want an LLM to do in your application, you should create a `Raif::Task` subclass (a generator is available), where you'll define the prompt and response format for the task and call via `Raif::Task.run`. For example, say you have a `Document` model in your app and want to have a summarization task for the LLM:
+If you have a single-shot task that you want an LLM to do in your application, you should create a `Raif::Task` subclass (see the end of this section for an example of using the task generator), where you'll define the prompt and response format for the task and call via `Raif::Task.run`. For example, say you have a `Document` model in your app and want to have a summarization task for the LLM:
 
 ```ruby
 class Raif::Tasks::DocumentSummarization < Raif::ApplicationTask
@@ -266,9 +262,7 @@ On each step of the agent loop, an entry will be added to the `Raif::AgentInvoca
 
 ## Model Tools
 
-Raif provides a `Raif::ModelTool` base class that you can use to create custom tools for your agents and conversations. To create a custom tool, you can can call the generator:
-
-You can create your own model tools to provide to the LLM using the generator:
+Raif provides a `Raif::ModelTool` base class that you can use to create custom tools for your agents and conversations. You can create your own model tools to provide to the LLM using the generator:
 ```bash
 rails generate raif:model_tool GoogleSearch
 ```
@@ -277,7 +271,7 @@ This will create a new model tool in `app/models/raif/model_tools/google_search.
 
 [`Raif::ModelTools::WikipediaSearch`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search.rb) and [`Raif::ModelTools::FetchUrl`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url.rb) tools are included as examples.
 
-Tools can be used in both `Raif::AgentInvocation` and `Raif::Conversation` objects.
+Tools can be used with both `Raif::AgentInvocation` and `Raif::Conversation` objects.
 
 # Web Admin
 
@@ -397,13 +391,25 @@ it "stubs a conversation" do
   expect(conversation_entry.reload).to be_completed
   expect(conversation_entry.model_response_message).to eq("Hello")
 end
+
+it "stubs an agent invocation" do
+  i = 0
+  stub_raif_agent_invocation(invocation) do |_messages|
+    i += 1
+    if i == 1
+      "<thought>I need to search.</thought>\n<action>{\"tool\": \"wikipedia_search\", \"arguments\": {\"query\": \"capital of France\"}}</action>"
+    else
+      "<thought>Now I know.</thought>\n<answer>Paris</answer>"
+    end
+  end
+end
 ```
 
 Raif also provides FactoryBot factories for its models. You can use them to create Raif models for testing. If you're using `factory_bot_rails`, they will be added automatically to `config.factory_bot.definition_file_paths`. The available factories can be found [here](https://github.com/CultivateLabs/raif/tree/main/spec/factories/shared).
 
 # Demo App
 
-Raif includes a [demo app](https://github.com/CultivateLabs/raif_demo) that you can use to see the engine in action. To run the demo app:
+Raif includes a [demo app](https://github.com/CultivateLabs/raif_demo) that you can use to see the engine in action. Assuming you have Ruby 3.4.2 and Postgres installed, you can run the demo app with:
 
 ```bash
 git clone git@github.com:CultivateLabs/raif_demo.git
