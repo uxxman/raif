@@ -103,7 +103,7 @@ Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ru
 When using Raif, it's often useful to use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM which can be viewed in the [web admin](#web-admin).
 
 Call `Raif::Llm#chat` with either a `message` string or `messages` array.:
-```
+```ruby
 llm = Raif.llm(:open_ai_gpt_4o) # will return a Raif::Llm instance
 model_completion = llm.chat(message: "Hello")
 puts model_completion.raw_response
@@ -111,7 +111,7 @@ puts model_completion.raw_response
 ```
 
 The `Raif::ModelCompletion` class will handle parsing the response for you, should you ask for a different response format (which can be one of `:html`, `:text`, or `:json`). You can also provide a `system_prompt` to the `chat` method:
-```
+```ruby
 llm = Raif.llm(:open_ai_gpt_4o)
 messages = [
   { role: "user", content: "Hello" },
@@ -123,11 +123,11 @@ system_prompt = "You are a helpful assistant who specializes in telling jokes. Y
 
 model_completion = llm.chat(messages: messages, response_format: :json, system_prompt: system_prompt)
 puts model_completion.raw_response
-# => ```json
+# => `​`​`json
 # => {
 # =>   "joke": "Why don't skeletons fight each other? They don't have the guts."
 # => }
-# => ```
+# => `​`​`
 
 puts model_completion.parsed_response # will strip backticks, parse the JSON, and give you a Ruby hash
 # => {"joke" => "Why don't skeletons fight each other? They don't have the guts."}
