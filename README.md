@@ -32,7 +32,7 @@ This will:
 - Copy Raif's database migrations to your application
 - Mount Raif's engine at `/raif` in your application's `config/routes.rb` file
 
-Run the migrations:
+Run the migrations. Raif is compatible with both PostgreSQL and MySQL databases.
 ```bash
 rails db:migrate
 ```
