@@ -123,11 +123,11 @@ system_prompt = "You are a helpful assistant who specializes in telling jokes. Y
 
 model_completion = llm.chat(messages: messages, response_format: :json, system_prompt: system_prompt)
 puts model_completion.raw_response
-# => ````json
+# => `​`​`json
 # => {
 # =>   "joke": "Why don't skeletons fight each other? They don't have the guts."
 # => }
-# => ````
+# => `​`​`
 
 puts model_completion.parsed_response # will strip backticks, parse the JSON, and give you a Ruby hash
 # => {"joke" => "Why don't skeletons fight each other? They don't have the guts."}
