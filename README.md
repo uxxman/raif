@@ -293,7 +293,7 @@ Raif also provides `Raif::AgentInvocation`, which implements a ReAct-style agent
 user = User.first
 agent_invocation = Raif::AgentInvocation.new(
   task: "What is Jimmy Buffet's birthday?", 
-  tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl], 
+  available_model_tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl], 
   creator: user
 )
 
@@ -309,7 +309,41 @@ agent_invocation.run! do |conversation_history_entry|
 end
 ```
 
-On each step of the agent loop, an entry will be added to the `Raif::AgentInvocation#conversation_history`. You can use this to monitor progress.
+On each step of the agent loop, an entry will be added to the `Raif::AgentInvocation#conversation_history` and, if you pass a block to the `run!` method, the block will be called with the `conversation_history_entry` as an argument. You can use this to monitor and display the agent's progress.
+
+### Agent Types
+
+If your application has a specific type of agent that you use frequently, you can create a custom agent type by running the generator. For example, say you are implementing a wikipedia research agent in your application:
+
+```bash
+rails generate raif:agent_invocation WikipediaResearchAgent
+```
+
+This will create a new agent invocation type in `app/models/raif/agent_invocations/wikipedia_research_agent.rb`.
+
+You can then customize the system prompt, available [model tools](#model-tools), and other aspects of the agent:
+
+```ruby
+module Raif
+  module AgentInvocations
+    class WikipediaResearchAgent < Raif::AgentInvocation
+      before_create -> {
+        self.available_model_tools ||= [
+          Raif::ModelTools::WikipediaSearchTool,
+          Raif::ModelTools::FetchUrlTool
+        ]
+      }
+
+      def system_prompt_intro
+        <<~PROMPT
+          You are an intelligent assistant that follows the ReAct (Reasoning + Acting) framework to complete tasks step by step using tool calls.
+          You are an expert in researching and synthesizing information from Wikipedia.
+        PROMPT
+      end
+    end
+  end
+end
+```
 
 ## Model Tools
 
