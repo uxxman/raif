@@ -10,6 +10,27 @@ Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered feature
 
 Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to power [ARC](https://www.arcanalysis.ai), an AI-powered research & analysis platform.
 
+## Table of Contents
+- [Setup](#setup)
+  - [OpenAI](#openai)
+  - [Anthropic Claude](#anthropic-claude)
+  - [AWS Bedrock (Claude)](#aws-bedrock-claude)
+- [Chatting with the LLM](#chatting-with-the-llm)
+- [Key Raif Concepts](#key-raif-concepts)
+  - [Tasks](#tasks)
+  - [Conversations](#conversations)
+  - [Agents](#agents)
+  - [Model Tools](#model-tools)
+- [Web Admin](#web-admin)
+- [Customization](#customization)
+  - [Controllers](#controllers)
+  - [Models](#models)
+  - [Views](#views)
+  - [System Prompts](#system-prompts)
+- [Testing](#testing)
+- [Demo App](#demo-app)
+- [License](#license)
+
 # Setup
 
 Add this line to your application's Gemfile:
@@ -230,7 +251,7 @@ And then in the view where you'd like to display the conversation interface:
 
 If your app already includes Bootstrap styles, this will render a conversation interface that looks something like:
 
-![Conversation Interface](./docs/screenshots/conversation_interface.png)
+![Conversation Interface](./screenshots/conversation-interface.png)
 
 If your app does not include Bootstrap, you can [override the views](#views) to update styles.
 
@@ -285,8 +306,25 @@ The admin interface contains sections for:
 - Agent Invocations
 - Model Tool Invocations
 
-ADD SCREENSHOTS HERE.
 
+### Model Completions
+  ![Model Completions Index](./screenshots/admin-model-completions-index.png)
+  ![Model Completion Detail](./screenshots/admin-model-completion-show.png)
+
+### Tasks
+  ![Tasks Index](./screenshots/admin-tasks-index.png)
+
+### Conversations
+  ![Conversations Index](./screenshots/admin-conversations-index.png)
+  ![Conversation Detail](./screenshots/admin-conversation-show.png)
+
+### Agent Invocations
+  ![Agent Invocations Index](./screenshots/admin-agent-invocations-index.png)
+  ![Agent Invocation Detail](./screenshots/admin-agent-invocation-show.png)
+
+### Model Tool Invocations
+  ![Model Tool Invocations Index](./screenshots/admin-model-tool-invocations-index.png)
+  ![Model Tool Invocation Detail](./screenshots/admin-model-tool-invocation-show.png)
 
 # Customization
 
@@ -421,6 +459,8 @@ OPENAI_API_KEY=your-openai-api-key-here bin/rails s
 ```
 
 You can then access the app at [http://localhost:3000](http://localhost:3000).
+
+![Demo App Screenshot](./screenshots/demo-app.png)
 
 # License
 
