@@ -31,5 +31,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "rails", ">= 7.1"
   spec.add_dependency "reverse_markdown"
   spec.add_dependency "ruby-openai"
+  # spec.add_dependency "structify"
   spec.add_dependency "turbo-rails"
 end
