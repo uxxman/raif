@@ -287,58 +287,54 @@ end
 
 ## Agents
 
-Raif also provides `Raif::AgentInvocation`, which implements a ReAct-style agent loop using [tool calls](#model-tools):
+Raif also provides `Raif::Agent`, which implements a ReAct-style agent loop using [tool calls](#model-tools):
 
 ```ruby
-user = User.first
-agent_invocation = Raif::AgentInvocation.new(
-  task: "What is Jimmy Buffet's birthday?", 
-  available_model_tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl], 
-  creator: user
+# Create a new agent
+agent = Raif::Agent.new(
+  task: "Research the history of the Eiffel Tower",
+  tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl],
+  creator: current_user
 )
 
-# conversation_history_entry will look something like:
-# { "role" => "user", "content" => "What is Jimmy Buffet's birthday?" }
-agent_invocation.run! do |conversation_history_entry|
+# Run the agent and get the final answer
+final_answer = agent.run!
+
+# Or run the agent and monitor its progress
+agent.run! do |conversation_history_entry|
   Turbo::StreamsChannel.broadcast_append_to(
     :my_agent_channel,
     target: "agent-progress",
     partial: "my_partial_displaying_agent_progress",
-    locals: { agent_invocation: agent_invocation, conversation_history_entry: conversation_history_entry }
+    locals: { agent: agent, conversation_history_entry: conversation_history_entry }
   )
 end
 ```
 
-On each step of the agent loop, an entry will be added to the `Raif::AgentInvocation#conversation_history` and, if you pass a block to the `run!` method, the block will be called with the `conversation_history_entry` as an argument. You can use this to monitor and display the agent's progress.
+On each step of the agent loop, an entry will be added to the `Raif::Agent#conversation_history` and, if you pass a block to the `run!` method, the block will be called with the `conversation_history_entry` as an argument. You can use this to monitor and display the agent's progress in real-time.
 
-### Agent Types
-
-If your application has a specific type of agent that you use frequently, you can create a custom agent type by running the generator. For example, say you are implementing a wikipedia research agent in your application:
-
-```bash
-rails generate raif:agent_invocation WikipediaResearchAgent
+The conversation_history_entry will be a hash with "role" and "content" keys:
+```ruby
+{
+  "role" => "assistant",
+  "content" => "a message here"
+}
 ```
 
-This will create a new agent invocation type in `app/models/raif/agent_invocations/wikipedia_research_agent.rb`.
+### Creating Custom Agents
 
-You can then customize the system prompt, available [model tools](#model-tools), and other aspects of the agent:
+You can create custom agents by subclassing `Raif::Agent`:
 
 ```ruby
 module Raif
-  module AgentInvocations
-    class WikipediaResearchAgent < Raif::AgentInvocation
-      before_create -> {
-        self.available_model_tools ||= [
-          Raif::ModelTools::WikipediaSearchTool,
-          Raif::ModelTools::FetchUrlTool
-        ]
-      }
+  module Agents
+    class WikipediaResearchAgent < Raif::Agent
+      def build_system_prompt
+        # Customize the system prompt for this agent
+      end
 
-      def system_prompt_intro
-        <<~PROMPT
-          You are an intelligent assistant that follows the ReAct (Reasoning + Acting) framework to complete tasks step by step using tool calls.
-          You are an expert in researching and synthesizing information from Wikipedia.
-        PROMPT
+      def process_iteration_model_completion(model_completion)
+        # Customize how this agent processes each iteration
       end
     end
   end
@@ -356,7 +352,7 @@ This will create a new model tool in `app/models/raif/model_tools/google_search.
 
 [`Raif::ModelTools::WikipediaSearch`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search.rb) and [`Raif::ModelTools::FetchUrl`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url.rb) tools are included as examples.
 
-Tools can be used with both `Raif::AgentInvocation` and `Raif::Conversation` objects.
+Tools can be used with both `Raif::Agent` and `Raif::Conversation` objects.
 
 # Web Admin
 
@@ -366,7 +362,7 @@ The admin interface contains sections for:
 - Model Completions
 - Tasks
 - Conversations
-- Agent Invocations
+- Agents
 - Model Tool Invocations
 
 
@@ -381,9 +377,9 @@ The admin interface contains sections for:
   ![Conversations Index](./screenshots/admin-conversations-index.png)
   ![Conversation Detail](./screenshots/admin-conversation-show.png)
 
-### Agent Invocations
-  ![Agent Invocations Index](./screenshots/admin-agent-invocations-index.png)
-  ![Agent Invocation Detail](./screenshots/admin-agent-invocation-show.png)
+### Agents
+  ![Agents Index](./screenshots/admin-agent-invocations-index.png)
+  ![Agents Detail](./screenshots/admin-agent-invocation-show.png)
 
 ### Model Tool Invocations
   ![Model Tool Invocations Index](./screenshots/admin-model-tool-invocations-index.png)
@@ -493,9 +489,9 @@ it "stubs a conversation" do
   expect(conversation_entry.model_response_message).to eq("Hello")
 end
 
-it "stubs an agent invocation" do
+it "stubs an agent" do
   i = 0
-  stub_raif_agent_invocation(invocation) do |_messages|
+  stub_raif_agent(agent) do |_messages|
     i += 1
     if i == 1
       "<thought>I need to search.</thought>\n<action>{\"tool\": \"wikipedia_search\", \"arguments\": {\"query\": \"capital of France\"}}</action>"

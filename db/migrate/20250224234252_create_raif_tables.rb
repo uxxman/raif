@@ -70,7 +70,7 @@ class CreateRaifTables < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    create_table :raif_agent_invocations do |t|
+    create_table :raif_agents do |t|
       t.string :type, null: false
       t.string :llm_model_key, null: false
       t.text :task
