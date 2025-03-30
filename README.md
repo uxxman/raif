@@ -378,8 +378,8 @@ The admin interface contains sections for:
   ![Conversation Detail](./screenshots/admin-conversation-show.png)
 
 ### Agents
-  ![Agents Index](./screenshots/admin-agent-invocations-index.png)
-  ![Agents Detail](./screenshots/admin-agent-invocation-show.png)
+  ![Agents Index](./screenshots/admin-agents-index.png)
+  ![Agents Detail](./screenshots/admin-agents-show.png)
 
 ### Model Tool Invocations
   ![Model Tool Invocations Index](./screenshots/admin-model-tool-invocations-index.png)
