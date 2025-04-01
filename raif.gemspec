@@ -5,11 +5,11 @@ require_relative "lib/raif/version"
 Gem::Specification.new do |spec|
   spec.name        = "raif"
   spec.version     = Raif::VERSION
-  spec.authors     = ["Ben Roesch"]
-  spec.email       = ["ben@cultivatelabs.com"]
+  spec.authors     = ["Ben Roesch", "Brian Leslie"]
+  spec.email       = ["ben@cultivatelabs.com", "brian@cultivatelabs.com"]
   spec.homepage    = "https://github.com/cultivatelabs/raif"
-  spec.summary     = "Ruby AI Framework"
-  spec.description = "Ruby AI Framework"
+  spec.summary     = "Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered features to your Rails apps, such as tasks, conversations, and agents." # rubocop:disable Layout/LineLength
+  spec.description = "Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered features to your Rails apps, such as tasks, conversations, and agents. It supports for multiple LLM providers including OpenAI, Anthropic Claude, and AWS Bedrock." # rubocop:disable Layout/LineLength
   spec.license     = "MIT"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
