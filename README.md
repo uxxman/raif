@@ -60,7 +60,7 @@ Run the migrations. Raif is compatible with both PostgreSQL and MySQL databases.
 rails db:migrate
 ```
 
-Configure authentication and authorization for Raif's controllers in `config/initializers/raif.rb`, if you're using the [conversations](#conversations) feature or Raif's [web admin](#web-admin):
+If you plan to use the [conversations](#conversations) feature or Raif's [web admin](#web-admin), configure authentication and authorization for Raif's controllers in `config/initializers/raif.rb`:
 
 ```ruby
 Raif.configure do |config|
@@ -79,6 +79,7 @@ Configure your LLM providers. You'll need at least one of:
 ## OpenAI
 ```ruby
 Raif.configure do |config|
+  config.open_ai_models_enabled = true
   config.open_ai_api_key = ENV["OPENAI_API_KEY"]
   config.default_llm_model_key = "open_ai_gpt_4o"
 end
@@ -92,6 +93,7 @@ Available OpenAI models:
 ## Anthropic Claude
 ```ruby
 Raif.configure do |config|
+  config.anthropic_models_enabled = true
   config.anthropic_api_key = ENV["ANTHROPIC_API_KEY"]
   config.default_llm_model_key = "anthropic_claude_3_5_sonnet"
 end
@@ -184,7 +186,11 @@ class Raif::Tasks::DocumentSummarization < Raif::ApplicationTask
       #{document.content}
       ```
 
-      Your task is to read the provided article and associated information, and summarize the article concisely and clearly in approximately 1 paragraph. Your summary should include all of the key points, views, and arguments of the text, and should only include facts referenced in the text directly. Do not add any inferences, speculations, or analysis of your own, and do not exaggerate or overstate facts. If you quote directly from the article, include quotation marks. If the text does not appear to represent the title, please return the text "Unable to generate summary" and nothing else.
+      Your task is to read the provided article and associated information, and summarize the article concisely and clearly in approximately 1 paragraph. Your summary should include all of the key points, views, and arguments of the text, and should only include facts referenced in the text directly. Do not add any inferences, speculations, or analysis of your own, and do not exaggerate or overstate facts. If you quote directly from the article, include quotation marks.
+
+      Format your response using basic HTML tags.
+
+      If the text does not appear to represent the title, please return the text "#{summarization_failure_text}" and nothing else.
     PROMPT
   end
 
@@ -281,19 +287,23 @@ class Raif::Conversations::CustomerSupport < Raif::Conversation
       You are a helpful assistant who specializes in customer support. You're working with a customer who is experiencing an issue with your product.
     PROMPT
   end
+
+  def initial_chat_message
+    I18n.t("#{self.class.name.underscore.gsub("/", ".")}.initial_chat_message")
+  end
 end
 ```
 
 
 ## Agents
 
-Raif also provides `Raif::Agent`, which implements a ReAct-style agent loop using [tool calls](#model-tools):
+Raif also provides `Raif::Agents::ReActAgent`, which implements a ReAct-style agent loop using [tool calls](#model-tools):
 
 ```ruby
 # Create a new agent
-agent = Raif::Agent.new(
+agent = Raif::Agents::ReActAgent.new(
   task: "Research the history of the Eiffel Tower",
-  tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl],
+  available_model_tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl],
   creator: current_user
 )
 
@@ -323,22 +333,41 @@ The conversation_history_entry will be a hash with "role" and "content" keys:
 
 ### Creating Custom Agents
 
-You can create custom agents by subclassing `Raif::Agent`:
+You can create custom agents using the generator:
+```bash
+rails generate raif:agent WikipediaResearchAgent
+```
+
+This will create a new agent in `app/models/raif/agents/wikipedia_research_agent.rb`:
 
 ```ruby
 module Raif
   module Agents
     class WikipediaResearchAgent < Raif::Agent
+      # If you want to always include a certain set of model tools with this agent type,
+      # uncomment this callback to populate the available_model_tools attribute with your desired model tools.
+      # before_create -> {
+      #   self.available_model_tools ||= [
+      #     Raif::ModelTools::WikipediaSearchTool,
+      #     Raif::ModelTools::FetchUrlTool
+      #   ]
+      # }
+
+      # Enter your agent's system prompt here. Alternatively, you can change your agent's superclass
+      # to an existing agent types (like Raif::Agents::ReActAgent) to utilize an existing system prompt.
       def build_system_prompt
-        # Customize the system prompt for this agent
+        # TODO: Implement your system prompt here
       end
 
+      # Each iteration of the agent loop will generate a new Raif::ModelCompletion record and
+      # then call this method with it as an argument.
       def process_iteration_model_completion(model_completion)
-        # Customize how this agent processes each iteration
+        # TODO: Implement your iteration processing here
       end
     end
   end
 end
+
 ```
 
 ## Model Tools
