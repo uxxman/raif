@@ -3,7 +3,7 @@
 module Raif
   class AgentGenerator < Rails::Generators::NamedBase
     source_root File.expand_path("templates", __dir__)
-    desc "Creates a new Agent subclass in app/models/raif/agents"
+    desc "Creates a new Raif::Agent subclass in app/models/raif/agents"
 
     def create_agent
       template "agent.rb.tt", "app/models/raif/agents/#{file_name}.rb"
