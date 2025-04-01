@@ -21,7 +21,6 @@ Gem::Specification.new do |spec|
     Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end
 
-  spec.add_dependency "anthropic-rb"
   spec.add_dependency "aws-sdk-bedrock"
   spec.add_dependency "aws-sdk-bedrockruntime"
   spec.add_dependency "faraday"
@@ -30,6 +29,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "pagy"
   spec.add_dependency "rails", ">= 7.1"
   spec.add_dependency "reverse_markdown"
-  spec.add_dependency "ruby-openai"
   spec.add_dependency "turbo-rails"
 end
