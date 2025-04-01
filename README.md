@@ -162,6 +162,12 @@ puts model_completion.parsed_response # will strip backticks, parse the JSON, an
 ## Tasks
 If you have a single-shot task that you want an LLM to do in your application, you should create a `Raif::Task` subclass (see the end of this section for an example of using the task generator), where you'll define the prompt and response format for the task and call via `Raif::Task.run`. For example, say you have a `Document` model in your app and want to have a summarization task for the LLM:
 
+```bash
+rails generate raif:task DocumentSummarization --response-format html
+```
+
+This will create a new task in `app/models/raif/tasks/document_summarization.rb`:
+
 ```ruby
 class Raif::Tasks::DocumentSummarization < Raif::ApplicationTask
   llm_response_format :html # options are :html, :text, :json
@@ -205,6 +211,55 @@ task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
 summary = task.parsed_response
 ```
 
+### JSON Response Format Tasks
+
+If you want to use a JSON response format for your task, you can do so by setting the `llm_response_format` to `:json` in your task subclass. If you're using OpenAI, this will set the response to use [JSON mode](https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat#json-mode). You can also define a JSON schema, which will then trigger utilization of OpenAI's [structured outputs](https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat#structured-outputs) feature. If you're using Claude, it will create a tool for Claude to use to generate a JSON response.
+
+```bash
+rails generate raif:task WebSearchQueryGeneration --response-format json
+```
+
+This will create a new task in `app/models/raif/tasks/web_search_query_generation.rb`:
+
+```ruby
+module Raif
+  module Tasks
+    class WebSearchQueryGeneration < Raif::ApplicationTask
+      llm_response_format :json
+
+      attr_accessor :topic
+
+      def self.json_response_schema
+        {
+          type: "object",
+          additionalProperties: false,
+          required: ["queries"],
+          properties: {
+            queries: {
+              type: "array",
+              items: {
+                type: "string"
+              }
+            }
+          }
+        }
+      end
+
+      def build_prompt
+        <<~PROMPT
+          Generate a list of 3 search queries that I can use to find information about the following topic:
+          #{topic}
+
+          Format your response as JSON.
+        PROMPT
+      end
+    end
+  end
+end
+
+```
+
+### Task Language Preference
 You can also pass in a `requested_language_key` to the `run` method. When this is provided, Raif will add a line to the system prompt requesting that the LLM respond in the specified language:
 ```
 task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user, requested_language_key: "es")
@@ -214,11 +269,6 @@ Would produce a system prompt that looks like this:
 ```
 You are an assistant with expertise in summarizing detailed articles into clear and concise language.
 You're collaborating with teammate who speaks Spanish. Please respond in Spanish.
-```
-
-To generate a new task, you can use the generator:
-```bash
-rails generate raif:task DocumentSummarization --response-format html
 ```
 
 ## Conversations
