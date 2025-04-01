@@ -85,7 +85,7 @@ Raif.configure do |config|
 end
 ```
 
-Available OpenAI models:
+Currently supported OpenAI models:
 - `open_ai_gpt_4o_mini`
 - `open_ai_gpt_4o`
 - `open_ai_gpt_3_5_turbo`
@@ -99,7 +99,7 @@ Raif.configure do |config|
 end
 ```
 
-Available Anthropic models:
+Currently supported Anthropic models:
 - `anthropic_claude_3_7_sonnet`
 - `anthropic_claude_3_5_sonnet`
 - `anthropic_claude_3_5_haiku`
@@ -114,7 +114,7 @@ Raif.configure do |config|
 end
 ```
 
-Available Bedrock models:
+Currently supported Bedrock models:
 - `bedrock_claude_3_5_sonnet`
 - `bedrock_claude_3_7_sonnet`
 - `bedrock_claude_3_5_haiku`
