@@ -372,16 +372,89 @@ end
 
 ## Model Tools
 
-Raif provides a `Raif::ModelTool` base class that you can use to create custom tools for your agents and conversations. You can create your own model tools to provide to the LLM using the generator:
+Raif provides a `Raif::ModelTool` base class that you can use to create custom tools for your agents and conversations. [`Raif::ModelTools::WikipediaSearch`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search.rb) and [`Raif::ModelTools::FetchUrl`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url.rb) tools are included as examples.
+
+You can create your own model tools to provide to the LLM using the generator:
 ```bash
 rails generate raif:model_tool GoogleSearch
 ```
 
-This will create a new model tool in `app/models/raif/model_tools/google_search.rb`.
+This will create a new model tool in `app/models/raif/model_tools/google_search.rb`:
 
-[`Raif::ModelTools::WikipediaSearch`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search.rb) and [`Raif::ModelTools::FetchUrl`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url.rb) tools are included as examples.
+```ruby
+class Raif::ModelTools::GoogleSearch < Raif::ModelTool
+  # For example tool implementations, see: 
+  # Wikipedia Search Tool: https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search_tool.rb
+  # Fetch URL Tool: https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url_tool.rb
 
-Tools can be used with both `Raif::Agent` and `Raif::Conversation` objects.
+  # An example of how the LLM should invoke your tool. This should return a hash with name and arguments keys.
+  # `to_json` will be called on it and provided to the LLM as an example of how to invoke your tool.
+  def self.example_model_invocation
+    {
+      "name": tool_name,
+      "arguments": { "query": "example query here" }
+    }
+  end
+
+  # Define your tool's argument schema here. It should be a valid JSON schema.
+  # When the model invokes your tool, the arguments it provides will be validated
+  # against this schema using JSON::Validator from the json-schema gem.
+  def self.tool_arguments_schema
+    # For example:
+    # {
+    #   type: "object",
+    #   additionalProperties: false,
+    #   required: ["query"],
+    #   properties: {
+    #     query: {
+    #       type: "string",
+    #       description: "The query to search for"
+    #     }
+    #   }
+    # }
+    # Would expect the model to invoke your tool with an arguments JSON object like:
+    # { "query" : "some query here" }
+  end
+
+  def self.tool_description
+    "Description of your tool that will be provided to the LLM so it knows when to invoke it"
+  end
+
+  # When your tool is invoked by the LLM in a Raif::Agent loop, 
+  # the results of the tool invocation are provided back to the LLM as an observation.
+  # This method should return whatever you want provided to the LLM.
+  # For example, if you were implementing a GoogleSearch tool, this might return a JSON
+  # object containing search results for the query.
+  def self.observation_for_invocation(tool_invocation)
+    return "No results found" unless tool_invocation.result.present?
+
+    JSON.pretty_generate(tool_invocation.result)
+  end
+
+  # When the LLM invokes your tool, this method will be called with a `Raif::ModelToolInvocation` record as an argument.
+  # It should handle the actual execution of the tool. 
+  # For example, if you are implementing a GoogleSearch tool, this method should run the actual search
+  # and store the results in the tool_invocation's result JSON column.
+  def self.process_invocation(tool_invocation)
+    # Extract arguments from tool_invocation.tool_arguments
+    # query = tool_invocation.tool_arguments["query"]
+    #
+    # Process the invocation and perform the desired action
+    # ...
+    #
+    # Store the results in the tool_invocation
+    # tool_invocation.update!(
+    #   result: {
+    #     # Your result data structure
+    #   }
+    # )
+    #
+    # Return the result
+    # tool_invocation.result
+  end
+
+end
+```
 
 # Web Admin
 
