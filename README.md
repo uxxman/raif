@@ -481,7 +481,7 @@ it "stubs a conversation" do
   conversation_entry = FactoryBot.create(:raif_conversation_entry, raif_conversation: conversation, creator: user)
 
   stub_raif_conversation(conversation) do |messages|
-    { "message" : "Hello" }.to_json
+    "Hello"
   end
 
   conversation_entry.process_entry!
