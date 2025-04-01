@@ -537,7 +537,7 @@ These views will automatically override Raif's default views. You can customize 
 
 ## System Prompts
 
-If you don't want to override the system prompt entirely in your task/conversation/agent subclasses, you can customize the intro portion of the system prompts for conversations and tasks:
+If you don't want to override the system prompt entirely in your task/conversation subclasses, you can customize the intro portion of the system prompts for conversations and tasks:
 
 ```ruby
 Raif.configure do |config|
@@ -566,7 +566,8 @@ You can then use the helpers to stub LLM calls:
 it "stubs a document summarization task" do
   # the messages argument is the array of messages sent to the LLM. It will look something like:
   # [{"role" => "user", "content" => "The prompt from the Raif::Tasks::DocumentSummarization task" }]
-  stub_raif_task(Raif::Tasks::DocumentSummarization) do |messages|
+  # The model_completion argument is the Raif::ModelCompletion record that was created for this task.
+  stub_raif_task(Raif::Tasks::DocumentSummarization) do |messages, model_completion|
     "Stub out the response from the LLM"
   end
 
@@ -582,7 +583,7 @@ it "stubs a conversation" do
   conversation = FactoryBot.create(:raif_test_conversation, creator: user)
   conversation_entry = FactoryBot.create(:raif_conversation_entry, raif_conversation: conversation, creator: user)
 
-  stub_raif_conversation(conversation) do |messages|
+  stub_raif_conversation(conversation) do |messages, model_completion|
     "Hello"
   end
 
@@ -593,7 +594,7 @@ end
 
 it "stubs an agent" do
   i = 0
-  stub_raif_agent(agent) do |_messages|
+  stub_raif_agent(agent) do |messages, model_completion|
     i += 1
     if i == 1
       "<thought>I need to search.</thought>\n<action>{\"tool\": \"wikipedia_search\", \"arguments\": {\"query\": \"capital of France\"}}</action>"
