@@ -60,7 +60,7 @@ Run the migrations. Raif is compatible with both PostgreSQL and MySQL databases.
 rails db:migrate
 ```
 
-Configure authentication and authorization for Raif's controllers in `config/initializers/raif.rb`, if you're using the [conversations](#conversations) feature or Raif's [web admin](#web-admin):
+If you plan to use the [conversations](#conversations) feature or Raif's [web admin](#web-admin), configure authentication and authorization for Raif's controllers in `config/initializers/raif.rb`:
 
 ```ruby
 Raif.configure do |config|
@@ -79,6 +79,7 @@ Configure your LLM providers. You'll need at least one of:
 ## OpenAI
 ```ruby
 Raif.configure do |config|
+  config.open_ai_models_enabled = true
   config.open_ai_api_key = ENV["OPENAI_API_KEY"]
   config.default_llm_model_key = "open_ai_gpt_4o"
 end
@@ -92,6 +93,7 @@ Available OpenAI models:
 ## Anthropic Claude
 ```ruby
 Raif.configure do |config|
+  config.anthropic_models_enabled = true
   config.anthropic_api_key = ENV["ANTHROPIC_API_KEY"]
   config.default_llm_model_key = "anthropic_claude_3_5_sonnet"
 end
@@ -160,6 +162,12 @@ puts model_completion.parsed_response # will strip backticks, parse the JSON, an
 ## Tasks
 If you have a single-shot task that you want an LLM to do in your application, you should create a `Raif::Task` subclass (see the end of this section for an example of using the task generator), where you'll define the prompt and response format for the task and call via `Raif::Task.run`. For example, say you have a `Document` model in your app and want to have a summarization task for the LLM:
 
+```bash
+rails generate raif:task DocumentSummarization --response-format html
+```
+
+This will create a new task in `app/models/raif/tasks/document_summarization.rb`:
+
 ```ruby
 class Raif::Tasks::DocumentSummarization < Raif::ApplicationTask
   llm_response_format :html # options are :html, :text, :json
@@ -184,7 +192,11 @@ class Raif::Tasks::DocumentSummarization < Raif::ApplicationTask
       #{document.content}
       ```
 
-      Your task is to read the provided article and associated information, and summarize the article concisely and clearly in approximately 1 paragraph. Your summary should include all of the key points, views, and arguments of the text, and should only include facts referenced in the text directly. Do not add any inferences, speculations, or analysis of your own, and do not exaggerate or overstate facts. If you quote directly from the article, include quotation marks. If the text does not appear to represent the title, please return the text "Unable to generate summary" and nothing else.
+      Your task is to read the provided article and associated information, and summarize the article concisely and clearly in approximately 1 paragraph. Your summary should include all of the key points, views, and arguments of the text, and should only include facts referenced in the text directly. Do not add any inferences, speculations, or analysis of your own, and do not exaggerate or overstate facts. If you quote directly from the article, include quotation marks.
+
+      Format your response using basic HTML tags.
+
+      If the text does not appear to represent the title, please return the text "#{summarization_failure_text}" and nothing else.
     PROMPT
   end
 
@@ -199,6 +211,55 @@ task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
 summary = task.parsed_response
 ```
 
+### JSON Response Format Tasks
+
+If you want to use a JSON response format for your task, you can do so by setting the `llm_response_format` to `:json` in your task subclass. If you're using OpenAI, this will set the response to use [JSON mode](https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat#json-mode). You can also define a JSON schema, which will then trigger utilization of OpenAI's [structured outputs](https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat#structured-outputs) feature. If you're using Claude, it will create a tool for Claude to use to generate a JSON response.
+
+```bash
+rails generate raif:task WebSearchQueryGeneration --response-format json
+```
+
+This will create a new task in `app/models/raif/tasks/web_search_query_generation.rb`:
+
+```ruby
+module Raif
+  module Tasks
+    class WebSearchQueryGeneration < Raif::ApplicationTask
+      llm_response_format :json
+
+      attr_accessor :topic
+
+      def self.json_response_schema
+        {
+          type: "object",
+          additionalProperties: false,
+          required: ["queries"],
+          properties: {
+            queries: {
+              type: "array",
+              items: {
+                type: "string"
+              }
+            }
+          }
+        }
+      end
+
+      def build_prompt
+        <<~PROMPT
+          Generate a list of 3 search queries that I can use to find information about the following topic:
+          #{topic}
+
+          Format your response as JSON.
+        PROMPT
+      end
+    end
+  end
+end
+
+```
+
+### Task Language Preference
 You can also pass in a `requested_language_key` to the `run` method. When this is provided, Raif will add a line to the system prompt requesting that the LLM respond in the specified language:
 ```
 task = Raif::Tasks::DocumentSummarization.run(document: document, creator: user, requested_language_key: "es")
@@ -208,11 +269,6 @@ Would produce a system prompt that looks like this:
 ```
 You are an assistant with expertise in summarizing detailed articles into clear and concise language.
 You're collaborating with teammate who speaks Spanish. Please respond in Spanish.
-```
-
-To generate a new task, you can use the generator:
-```bash
-rails generate raif:task DocumentSummarization --response-format html
 ```
 
 ## Conversations
@@ -281,19 +337,23 @@ class Raif::Conversations::CustomerSupport < Raif::Conversation
       You are a helpful assistant who specializes in customer support. You're working with a customer who is experiencing an issue with your product.
     PROMPT
   end
+
+  def initial_chat_message
+    I18n.t("#{self.class.name.underscore.gsub("/", ".")}.initial_chat_message")
+  end
 end
 ```
 
 
 ## Agents
 
-Raif also provides `Raif::Agent`, which implements a ReAct-style agent loop using [tool calls](#model-tools):
+Raif also provides `Raif::Agents::ReActAgent`, which implements a ReAct-style agent loop using [tool calls](#model-tools):
 
 ```ruby
 # Create a new agent
-agent = Raif::Agent.new(
+agent = Raif::Agents::ReActAgent.new(
   task: "Research the history of the Eiffel Tower",
-  tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl],
+  available_model_tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl],
   creator: current_user
 )
 
@@ -323,36 +383,128 @@ The conversation_history_entry will be a hash with "role" and "content" keys:
 
 ### Creating Custom Agents
 
-You can create custom agents by subclassing `Raif::Agent`:
+You can create custom agents using the generator:
+```bash
+rails generate raif:agent WikipediaResearchAgent
+```
+
+This will create a new agent in `app/models/raif/agents/wikipedia_research_agent.rb`:
 
 ```ruby
 module Raif
   module Agents
     class WikipediaResearchAgent < Raif::Agent
+      # If you want to always include a certain set of model tools with this agent type,
+      # uncomment this callback to populate the available_model_tools attribute with your desired model tools.
+      # before_create -> {
+      #   self.available_model_tools ||= [
+      #     Raif::ModelTools::WikipediaSearchTool,
+      #     Raif::ModelTools::FetchUrlTool
+      #   ]
+      # }
+
+      # Enter your agent's system prompt here. Alternatively, you can change your agent's superclass
+      # to an existing agent types (like Raif::Agents::ReActAgent) to utilize an existing system prompt.
       def build_system_prompt
-        # Customize the system prompt for this agent
+        # TODO: Implement your system prompt here
       end
 
+      # Each iteration of the agent loop will generate a new Raif::ModelCompletion record and
+      # then call this method with it as an argument.
       def process_iteration_model_completion(model_completion)
-        # Customize how this agent processes each iteration
+        # TODO: Implement your iteration processing here
       end
     end
   end
 end
+
 ```
 
 ## Model Tools
 
-Raif provides a `Raif::ModelTool` base class that you can use to create custom tools for your agents and conversations. You can create your own model tools to provide to the LLM using the generator:
+Raif provides a `Raif::ModelTool` base class that you can use to create custom tools for your agents and conversations. [`Raif::ModelTools::WikipediaSearch`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search.rb) and [`Raif::ModelTools::FetchUrl`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url.rb) tools are included as examples.
+
+You can create your own model tools to provide to the LLM using the generator:
 ```bash
 rails generate raif:model_tool GoogleSearch
 ```
 
-This will create a new model tool in `app/models/raif/model_tools/google_search.rb`.
+This will create a new model tool in `app/models/raif/model_tools/google_search.rb`:
 
-[`Raif::ModelTools::WikipediaSearch`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search.rb) and [`Raif::ModelTools::FetchUrl`](https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url.rb) tools are included as examples.
+```ruby
+class Raif::ModelTools::GoogleSearch < Raif::ModelTool
+  # For example tool implementations, see: 
+  # Wikipedia Search Tool: https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search_tool.rb
+  # Fetch URL Tool: https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url_tool.rb
 
-Tools can be used with both `Raif::Agent` and `Raif::Conversation` objects.
+  # An example of how the LLM should invoke your tool. This should return a hash with name and arguments keys.
+  # `to_json` will be called on it and provided to the LLM as an example of how to invoke your tool.
+  def self.example_model_invocation
+    {
+      "name": tool_name,
+      "arguments": { "query": "example query here" }
+    }
+  end
+
+  # Define your tool's argument schema here. It should be a valid JSON schema.
+  # When the model invokes your tool, the arguments it provides will be validated
+  # against this schema using JSON::Validator from the json-schema gem.
+  def self.tool_arguments_schema
+    # For example:
+    # {
+    #   type: "object",
+    #   additionalProperties: false,
+    #   required: ["query"],
+    #   properties: {
+    #     query: {
+    #       type: "string",
+    #       description: "The query to search for"
+    #     }
+    #   }
+    # }
+    # Would expect the model to invoke your tool with an arguments JSON object like:
+    # { "query" : "some query here" }
+  end
+
+  def self.tool_description
+    "Description of your tool that will be provided to the LLM so it knows when to invoke it"
+  end
+
+  # When your tool is invoked by the LLM in a Raif::Agent loop, 
+  # the results of the tool invocation are provided back to the LLM as an observation.
+  # This method should return whatever you want provided to the LLM.
+  # For example, if you were implementing a GoogleSearch tool, this might return a JSON
+  # object containing search results for the query.
+  def self.observation_for_invocation(tool_invocation)
+    return "No results found" unless tool_invocation.result.present?
+
+    JSON.pretty_generate(tool_invocation.result)
+  end
+
+  # When the LLM invokes your tool, this method will be called with a `Raif::ModelToolInvocation` record as an argument.
+  # It should handle the actual execution of the tool. 
+  # For example, if you are implementing a GoogleSearch tool, this method should run the actual search
+  # and store the results in the tool_invocation's result JSON column.
+  def self.process_invocation(tool_invocation)
+    # Extract arguments from tool_invocation.tool_arguments
+    # query = tool_invocation.tool_arguments["query"]
+    #
+    # Process the invocation and perform the desired action
+    # ...
+    #
+    # Store the results in the tool_invocation
+    # tool_invocation.update!(
+    #   result: {
+    #     # Your result data structure
+    #   }
+    # )
+    #
+    # Return the result
+    # tool_invocation.result
+  end
+
+end
+```
 
 # Web Admin
 
@@ -435,7 +587,7 @@ These views will automatically override Raif's default views. You can customize 
 
 ## System Prompts
 
-If you don't want to override the system prompt entirely in your task/conversation/agent subclasses, you can customize the intro portion of the system prompts for conversations and tasks:
+If you don't want to override the system prompt entirely in your task/conversation subclasses, you can customize the intro portion of the system prompts for conversations and tasks:
 
 ```ruby
 Raif.configure do |config|
@@ -464,7 +616,8 @@ You can then use the helpers to stub LLM calls:
 it "stubs a document summarization task" do
   # the messages argument is the array of messages sent to the LLM. It will look something like:
   # [{"role" => "user", "content" => "The prompt from the Raif::Tasks::DocumentSummarization task" }]
-  stub_raif_task(Raif::Tasks::DocumentSummarization) do |messages|
+  # The model_completion argument is the Raif::ModelCompletion record that was created for this task.
+  stub_raif_task(Raif::Tasks::DocumentSummarization) do |messages, model_completion|
     "Stub out the response from the LLM"
   end
 
@@ -480,8 +633,8 @@ it "stubs a conversation" do
   conversation = FactoryBot.create(:raif_test_conversation, creator: user)
   conversation_entry = FactoryBot.create(:raif_conversation_entry, raif_conversation: conversation, creator: user)
 
-  stub_raif_conversation(conversation) do |messages|
-    { "message" : "Hello" }.to_json
+  stub_raif_conversation(conversation) do |messages, model_completion|
+    "Hello"
   end
 
   conversation_entry.process_entry!
@@ -491,7 +644,7 @@ end
 
 it "stubs an agent" do
   i = 0
-  stub_raif_agent(agent) do |_messages|
+  stub_raif_agent(agent) do |messages, model_completion|
     i += 1
     if i == 1
       "<thought>I need to search.</thought>\n<action>{\"tool\": \"wikipedia_search\", \"arguments\": {\"query\": \"capital of France\"}}</action>"
