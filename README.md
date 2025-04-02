@@ -160,7 +160,7 @@ puts model_completion.parsed_response # will strip backticks, parse the JSON, an
 # Key Raif Concepts
 
 ## Tasks
-If you have a single-shot task that you want an LLM to do in your application, you should create a `Raif::Task` subclass (see the end of this section for an example of using the task generator), where you'll define the prompt and response format for the task and call via `Raif::Task.run`. For example, say you have a `Document` model in your app and want to have a summarization task for the LLM:
+If you have a single-shot task that you want an LLM to do in your application, you should create a `Raif::Task` subclass, where you'll define the prompt and response format for the task and call via `Raif::Task.run`. For example, say you have a `Document` model in your app and want to have a summarization task for the LLM:
 
 ```bash
 rails generate raif:task DocumentSummarization --response-format html
@@ -270,6 +270,8 @@ Would produce a system prompt that looks like this:
 You are an assistant with expertise in summarizing detailed articles into clear and concise language.
 You're collaborating with teammate who speaks Spanish. Please respond in Spanish.
 ```
+
+The current list of valid language keys can be found [here](https://github.com/CultivateLabs/raif/blob/main/lib/raif/languages.rb).
 
 ## Conversations
 
