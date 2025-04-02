@@ -4,13 +4,13 @@ PATH
     raif (1.0.0)
       aws-sdk-bedrock
       aws-sdk-bedrockruntime
-      faraday
-      json-schema
-      loofah
+      faraday (>= 2.0)
+      json-schema (>= 5.0)
+      loofah (>= 2.21)
       pagy
       rails (>= 7.1)
-      reverse_markdown
-      turbo-rails
+      reverse_markdown (>= 2.0)
+      turbo-rails (>= 2.0)
 
 GEM
   remote: https://rubygems.org/

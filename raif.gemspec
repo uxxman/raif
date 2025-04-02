@@ -23,11 +23,11 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "aws-sdk-bedrock"
   spec.add_dependency "aws-sdk-bedrockruntime"
-  spec.add_dependency "faraday"
-  spec.add_dependency "json-schema"
-  spec.add_dependency "loofah"
+  spec.add_dependency "faraday", ">= 2.0"
+  spec.add_dependency "json-schema", ">= 5.0"
+  spec.add_dependency "loofah", ">= 2.21"
   spec.add_dependency "pagy"
   spec.add_dependency "rails", ">= 7.1"
-  spec.add_dependency "reverse_markdown"
-  spec.add_dependency "turbo-rails"
+  spec.add_dependency "reverse_markdown", ">= 2.0"
+  spec.add_dependency "turbo-rails", ">= 2.0"
 end
