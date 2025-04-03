@@ -14,7 +14,9 @@
     </div>
     <div class="row mb-3">
       <div class="col-md-3"><strong><%= t("raif.admin.common.creator") %>:</strong></div>
-      <div class="col-md-9"><%= @task.creator_type %> #<%= @task.creator_id %></div>
+      <div class="col-md-9">
+        <%= @task.creator.try(:raif_display_name) || "#{@task.creator_type} ##{@task.creator_id}" %>
+      </div>
     </div>
     <div class="row mb-3">
       <div class="col-md-3"><strong><%= t("raif.admin.common.model") %>:</strong></div>
