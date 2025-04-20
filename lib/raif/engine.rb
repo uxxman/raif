@@ -77,6 +77,14 @@ module Raif
 
       require "#{Raif::Engine.root}/spec/support/test_llm"
       Raif.register_llm(Raif::Llms::Test, key: :raif_test_llm, api_name: "raif-test-llm")
+
+      require "#{Raif::Engine.root}/spec/support/test_embedding_model"
+      Raif.register_embedding_model(
+        Raif::EmbeddingModels::Test,
+        key: :raif_test_embedding_model,
+        api_name: "raif-test-embedding-model",
+        default_output_vector_size: 1536
+      )
     end
 
     config.after_initialize do
