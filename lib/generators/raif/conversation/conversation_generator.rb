@@ -7,6 +7,11 @@ module Raif
 
       desc "Creates a new conversation type in the app/models/raif/conversations directory"
 
+      def create_application_conversation
+        template "application_conversation.rb.tt",
+          "app/models/raif/application_conversation.rb" unless File.exist?("app/models/raif/application_conversation.rb")
+      end
+
       def create_conversation_file
         template "conversation.rb.tt", File.join("app/models/raif/conversations", "#{file_name}.rb")
       end
