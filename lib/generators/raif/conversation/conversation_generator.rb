@@ -7,6 +7,11 @@ module Raif
 
       desc "Creates a new conversation type in the app/models/raif/conversations directory"
 
+      class_option :response_format,
+        type: :string,
+        default: "text",
+        desc: "Response format for the task (text, html, or json)"
+
       def create_application_conversation
         template "application_conversation.rb.tt",
           "app/models/raif/application_conversation.rb" unless File.exist?("app/models/raif/application_conversation.rb")
