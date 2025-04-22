@@ -49,12 +49,25 @@ class Raif::ConversationEntry < Raif::ApplicationRecord
 
     if raif_model_completion.parsed_response.present? || raif_model_completion.response_tool_calls.present?
       extract_message_and_invoke_tools!
+      create_entry_for_observation! if triggers_observation_to_model?
     else
       logger.error "Error processing conversation entry ##{id}. No model response found."
       failed!
     end
 
     self
+  end
+
+  def triggers_observation_to_model?
+    return false unless completed?
+
+    raif_model_tool_invocations.any?(&:triggers_observation_to_model?)
+  end
+
+  def create_entry_for_observation!
+    follow_up_entry = raif_conversation.entries.create!(creator: creator)
+    Raif::ConversationEntryJob.perform_later(conversation_entry: follow_up_entry)
+    follow_up_entry.broadcast_append_to raif_conversation, target: dom_id(raif_conversation, :entries)
   end
 
 private
@@ -68,7 +81,9 @@ private
       if raif_model_completion.response_tool_calls.present?
         raif_model_completion.response_tool_calls.each do |tool_call|
           tool_klass = available_model_tools_map[tool_call["name"]]
-          tool_klass&.invoke_tool(tool_arguments: tool_call["arguments"], source: self)
+          next if tool_klass.nil?
+
+          tool_klass.invoke_tool(tool_arguments: tool_call["arguments"], source: self)
         end
       end
 
