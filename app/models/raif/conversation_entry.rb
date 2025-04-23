@@ -16,7 +16,7 @@ class Raif::ConversationEntry < Raif::ApplicationRecord
   has_one :raif_model_completion, as: :source, dependent: :destroy, class_name: "Raif::ModelCompletion"
 
   delegate :available_model_tools, to: :raif_conversation
-  delegate :system_prompt, :llm_model_key, :response_format, to: :raif_model_completion, allow_nil: true
+  delegate :system_prompt, :llm_model_key, to: :raif_model_completion, allow_nil: true
   delegate :json_response_schema, to: :class
 
   accepts_nested_attributes_for :raif_user_tool_invocation
@@ -33,11 +33,12 @@ class Raif::ConversationEntry < Raif::ApplicationRecord
   def add_user_tool_invocation_to_user_message
     return unless raif_user_tool_invocation.present?
 
-    self.user_message = <<~MESSAGE.strip
-      #{raif_user_tool_invocation.as_user_message}
+    separator = response_format == "html" ? "<br>" : "\n\n"
+    self.user_message = [user_message, raif_user_tool_invocation.as_user_message].join(separator)
+  end
 
-      #{user_message}
-    MESSAGE
+  def response_format
+    raif_model_completion&.response_format.presence || raif_conversation.response_format
   end
 
   def generating_response?
