@@ -7,15 +7,17 @@
 
   <div class="period-filter">
     <%= form_tag raif.admin_stats_tasks_path, method: :get, id: "period_filter_form", class: "d-flex align-items-center" do %>
-      <%= select_tag :period, 
-        options_for_select([
-          [t("raif.admin.common.period_day"), "day"],
-          [t("raif.admin.common.period_week"), "week"],
-          [t("raif.admin.common.period_month"), "month"],
-          [t("raif.admin.common.period_all"), "all"]
-        ], @selected_period),
-        class: "form-select form-select-sm me-2"
-      %>
+      <%= select_tag :period,
+            options_for_select(
+              [
+                [t("raif.admin.common.period_day"), "day"],
+                [t("raif.admin.common.period_week"), "week"],
+                [t("raif.admin.common.period_month"), "month"],
+                [t("raif.admin.common.period_all"), "all"]
+              ],
+              @selected_period
+            ),
+            class: "form-select form-select-sm me-2" %>
       <%= submit_tag t("raif.admin.common.update"), class: "btn btn-sm btn-primary" %>
     <% end %>
   </div>
