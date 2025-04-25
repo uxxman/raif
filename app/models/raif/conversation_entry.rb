@@ -76,7 +76,7 @@ private
   def extract_message_and_invoke_tools!
     transaction do
       self.raw_response = raif_model_completion.raw_response
-      self.model_response_message = raif_model_completion.parsed_response
+      self.model_response_message = raif_conversation.process_model_response_message(message: raif_model_completion.parsed_response, entry: self)
       save!
 
       if raif_model_completion.response_tool_calls.present?
