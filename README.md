@@ -196,6 +196,7 @@ This will create a new task in `app/models/raif/tasks/document_summarization.rb`
 ```ruby
 class Raif::Tasks::DocumentSummarization < Raif::ApplicationTask
   llm_response_format :html # options are :html, :text, :json
+  llm_temperature 0.8 # optional, defaults to 0.7
   
   # Any attr_accessor you define can be included as an argument when calling `run`. 
   # E.g. Raif::Tasks::DocumentSummarization.run(document: document, creator: user)
