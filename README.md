@@ -6,7 +6,7 @@
 [![Documentation](https://img.shields.io/badge/docs-YARD-blue.svg)](https://cultivatelabs.github.io/raif/)
 
 
-Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered features to your Rails apps, such as [tasks](#tasks), [conversations](#conversations), and [agents](#agents).  It supports for multiple LLM providers including [OpenAI](#openai), [Anthropic Claude](#anthropic-claude), and [AWS Bedrock](#aws-bedrock).
+Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered features to your Rails apps, such as [tasks](#tasks), [conversations](#conversations), and [agents](#agents).  It supports for multiple LLM providers including [OpenAI](#openai), [Anthropic Claude](#anthropic-claude), [AWS Bedrock](#aws-bedrock), and [OpenRouter](#openrouter).
 
 Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to power [ARC](https://www.arcanalysis.ai), an AI-powered research & analysis platform.
 
@@ -15,6 +15,7 @@ Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to 
   - [OpenAI](#openai)
   - [Anthropic Claude](#anthropic-claude)
   - [AWS Bedrock (Claude)](#aws-bedrock-claude)
+  - [OpenRouter](#openrouter)
 - [Chatting with the LLM](#chatting-with-the-llm)
 - [Key Raif Concepts](#key-raif-concepts)
   - [Tasks](#tasks)
@@ -29,6 +30,7 @@ Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to 
   - [Models](#models)
   - [Views](#views)
   - [System Prompts](#system-prompts)
+  - [Adding LLM Models](#adding-llm-models)
 - [Testing](#testing)
 - [Demo App](#demo-app)
 - [License](#license)
@@ -122,6 +124,28 @@ Currently supported Bedrock models:
 - `bedrock_claude_3_opus`
 
 Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/BedrockRuntime/Client.html) and AWS credentials should be configured via the AWS SDK (environment variables, IAM role, etc.)
+
+## OpenRouter
+[OpenRouter](https://openrouter.ai/) is a unified API that provides access to multiple AI models from different providers including Anthropic, Meta, Google, and more.
+
+```ruby
+Raif.configure do |config|
+  config.open_router_models_enabled = true
+  config.open_router_api_key = ENV["OPENROUTER_API_KEY"]
+  config.open_router_app_name = "Your App Name" # Optional
+  config.open_router_site_url = "https://yourdomain.com" # Optional
+  config.default_llm_model_key = "open_router_claude_3_7_sonnet"
+end
+```
+
+Currently included OpenRouter models:
+- `open_router_claude_3_7_sonnet`
+- `open_router_llama_3_3_70b_instruct`
+- `open_router_llama_3_1_8b_instruct`
+- `open_router_gemini_2_0_flash`
+- `open_router_deepseek_chat_v3`
+
+See [Adding LLM Models](#adding-llm-models) for more information on adding new OpenRouter models.
 
 # Chatting with the LLM
 
@@ -646,6 +670,29 @@ If you don't want to override the system prompt entirely in your task/conversati
 Raif.configure do |config|
   config.conversation_system_prompt_intro = "You are a helpful assistant who specializes in customer support."
   config.task_system_prompt_intro = "You are a helpful assistant who specializes in data analysis."
+end
+```
+
+## Adding LLM Models
+
+You can easily add new LLM models to Raif:
+
+```ruby
+# Register the model in Raif's LLM registry
+Raif.register_llm(Raif::Llms::OpenRouter, {
+  key: :open_router_gemini_flash_1_5_8b, # a unique key for the model
+  api_name: "google/gemini-flash-1.5-8b", # name of the model to be used in API calls - needs to match the provider's API name
+  input_token_cost: 0.038 / 1_000_000, # the cost per input token
+  output_token_cost: 0.15 / 1_000_000, # the cost per output token
+})
+
+# Then use the model
+llm = Raif.llm(:open_router_gemini_flash_1_5_8b)
+llm.chat(message: "Hello, world!")
+
+# Or set it as the default LLM model in your initializer
+Raif.configure do |config|
+  config.default_llm_model_key = "open_router_gemini_flash_1_5_8b"
 end
 ```
 
