@@ -8,6 +8,7 @@ require "raif/errors"
 require "raif/utils"
 require "raif/llm_registry"
 require "raif/embedding_model_registry"
+require "raif/json_schema_builder"
 
 require "faraday"
 require "json-schema"
