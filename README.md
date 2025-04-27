@@ -469,6 +469,8 @@ class Raif::ModelTools::GoogleSearch < Raif::ModelTool
   # It should be a valid JSON schema. When the model invokes your tool,
   # the arguments it provides will be validated against this schema using JSON::Validator from the json-schema gem.
   #
+  # All attributes will be required and additionalProperties will be set to false.
+  #
   # This schema would expect the model to invoke your tool with an arguments JSON object like:
   # { "query" : "some query here" }
   define_tool_arguments_schema do
