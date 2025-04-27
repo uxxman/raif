@@ -462,8 +462,18 @@ This will create a new model tool in `app/models/raif/model_tools/google_search.
 ```ruby
 class Raif::ModelTools::GoogleSearch < Raif::ModelTool
   # For example tool implementations, see: 
-  # Wikipedia Search Tool: https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search_tool.rb
-  # Fetch URL Tool: https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url_tool.rb
+  # Wikipedia Search Tool: https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/wikipedia_search.rb
+  # Fetch URL Tool: https://github.com/CultivateLabs/raif/blob/main/app/models/raif/model_tools/fetch_url.rb
+
+  # Define the schema for the arguments that the LLM should use when invoking your tool.
+  # It should be a valid JSON schema. When the model invokes your tool,
+  # the arguments it provides will be validated against this schema using JSON::Validator from the json-schema gem.
+  #
+  # This schema would expect the model to invoke your tool with an arguments JSON object like:
+  # { "query" : "some query here" }
+  define_tool_arguments_schema do
+    string :query, description: "The query to search for"
+  end
 
   # An example of how the LLM should invoke your tool. This should return a hash with name and arguments keys.
   # `to_json` will be called on it and provided to the LLM as an example of how to invoke your tool.
@@ -472,26 +482,6 @@ class Raif::ModelTools::GoogleSearch < Raif::ModelTool
       "name": tool_name,
       "arguments": { "query": "example query here" }
     }
-  end
-
-  # Define your tool's argument schema here. It should be a valid JSON schema.
-  # When the model invokes your tool, the arguments it provides will be validated
-  # against this schema using JSON::Validator from the json-schema gem.
-  def self.tool_arguments_schema
-    # For example:
-    # {
-    #   type: "object",
-    #   additionalProperties: false,
-    #   required: ["query"],
-    #   properties: {
-    #     query: {
-    #       type: "string",
-    #       description: "The query to search for"
-    #     }
-    #   }
-    # }
-    # Would expect the model to invoke your tool with an arguments JSON object like:
-    # { "query" : "some query here" }
   end
 
   def self.tool_description
