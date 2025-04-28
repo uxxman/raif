@@ -473,20 +473,20 @@ class Raif::ModelTools::GoogleSearch < Raif::ModelTool
   #
   # This schema would expect the model to invoke your tool with an arguments JSON object like:
   # { "query" : "some query here" }
-  define_tool_arguments_schema do
+  tool_arguments_schema do
     string :query, description: "The query to search for"
   end
 
   # An example of how the LLM should invoke your tool. This should return a hash with name and arguments keys.
   # `to_json` will be called on it and provided to the LLM as an example of how to invoke your tool.
-  def self.example_model_invocation
+  example_model_invocation do
     {
       "name": tool_name,
       "arguments": { "query": "example query here" }
     }
   end
 
-  def self.tool_description
+  tool_description do
     "Description of your tool that will be provided to the LLM so it knows when to invoke it"
   end
 
