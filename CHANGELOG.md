@@ -15,3 +15,4 @@
 - `Raif::Conversation` subtypes can now implement `process_model_response_message` to do custom processing of the model response message before it is saved to the database. [#89](https://github.com/CultivateLabs/raif/pull/89)
 - `Raif::ModelTool` subclasses can now override `def self.triggers_observation_to_model?` to specify if the tool call's results should be automatically provided back to the model (e.g. a SearchTool might automatically provide the observation back to the model during a `Raif::Conversation`). [#85](https://github.com/CultivateLabs/raif/pull/85)
 - `Raif::Task` subclasses can now set a `temperature` for the LLM via `llm_temperature`. [#95](https://github.com/CultivateLabs/raif/pull/95)
+- `Raif::Task` subclasses can now set allowed tags and attributes for HTML LLM responses via `llm_response_allowed_tags` and `llm_response_allowed_attributes`. [#103](https://github.com/CultivateLabs/raif/pull/103)
