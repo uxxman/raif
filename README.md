@@ -23,7 +23,8 @@ Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to 
     - [Conversation Types](#conversation-types)
   - [Agents](#agents)
   - [Model Tools](#model-tools)
-- [Images/Files/PDF's](#images-files-pdfs)
+- [Images/Files/PDF's](#imagesfilespdfs)
+  - [Images/Files/PDF's in Tasks](#imagesfilespdfs-in-tasks)
 - [Embedding Models](#embedding-models)
 - [Web Admin](#web-admin)
 - [Customization](#customization)
@@ -571,7 +572,7 @@ model_completion = llm.chat(messages: [
 ])
 ```
 
-## Images/Files/PDF's in Tasks
+### Images/Files/PDF's in Tasks
 
 You can include images and files/PDF's when running a `Raif::Task`:
 
