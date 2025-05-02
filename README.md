@@ -259,20 +259,10 @@ module Raif
 
       attr_accessor :topic
 
-      def self.json_response_schema
-        {
-          type: "object",
-          additionalProperties: false,
-          required: ["queries"],
-          properties: {
-            queries: {
-              type: "array",
-              items: {
-                type: "string"
-              }
-            }
-          }
-        }
+      json_response_schema do
+        array :queries do
+          items type: "string"
+        end
       end
 
       def build_prompt
