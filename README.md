@@ -726,6 +726,9 @@ If you don't want to override the system prompt entirely in your task/conversati
 Raif.configure do |config|
   config.conversation_system_prompt_intro = "You are a helpful assistant who specializes in customer support."
   config.task_system_prompt_intro = "You are a helpful assistant who specializes in data analysis."
+  # or with a lambda
+  config.task_system_prompt_intro = ->(task) { "You are a helpful assistant who specializes in #{task.name}." }
+  config.conversation_system_prompt_intro = ->(conversation) { "You are a helpful assistant talking to #{conversation.creator.email}. Today's date is #{Date.today.strftime('%B %d, %Y')}." }
 end
 ```
 

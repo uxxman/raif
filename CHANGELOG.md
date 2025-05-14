@@ -20,3 +20,4 @@
 - `Raif::Task` subclasses can now set a `temperature` for the LLM via `llm_temperature`. [#95](https://github.com/CultivateLabs/raif/pull/95)
 - `Raif::Task` subclasses can now set allowed tags and attributes for HTML LLM responses via `llm_response_allowed_tags` and `llm_response_allowed_attributes`. [#103](https://github.com/CultivateLabs/raif/pull/103)
 - LLM API requests will now be retried if they fail. This can be configured via `llm_request_max_retries` and `llm_request_retriable_exceptions`. [#112](https://github.com/CultivateLabs/raif/pull/112)
+- `Raif.config.task_system_prompt_intro` and `Raif.config.conversation_system_prompt_intro` can now be a lambda that returns a dynamic system prompt. [#116](https://github.com/CultivateLabs/raif/pull/116)
