@@ -82,6 +82,20 @@ module Raif
       ],
       Raif::Llms::Anthropic => [
         {
+          key: :anthropic_claude_4_sonnet,
+          api_name: "claude-sonnet-4-20250514",
+          input_token_cost: 3.0 / 1_000_000,
+          output_token_cost: 15.0 / 1_000_000,
+          max_completion_tokens: 8192
+        },
+        {
+          key: :anthropic_claude_4_opus,
+          api_name: "claude-opus-4-20250514",
+          input_token_cost: 15.0 / 1_000_000,
+          output_token_cost: 75.0 / 1_000_000,
+          max_completion_tokens: 8192
+        },
+        {
           key: :anthropic_claude_3_7_sonnet,
           api_name: "claude-3-7-sonnet-latest",
           input_token_cost: 3.0 / 1_000_000,
@@ -111,6 +125,20 @@ module Raif
         },
       ],
       Raif::Llms::BedrockClaude => [
+        {
+          key: :bedrock_claude_4_sonnet,
+          api_name: "anthropic.claude-sonnet-4-20250514-v1:0",
+          input_token_cost: 0.003 / 1000,
+          output_token_cost: 0.015 / 1000,
+          max_completion_tokens: 8192
+        },
+        {
+          key: :bedrock_claude_4_opus,
+          api_name: "anthropic.claude-opus-4-20250514-v1:0",
+          input_token_cost: 0.015 / 1000,
+          output_token_cost: 0.075 / 1000,
+          max_completion_tokens: 8192
+        },
         {
           key: :bedrock_claude_3_5_sonnet,
           api_name: "anthropic.claude-3-5-sonnet-20241022-v2:0",
