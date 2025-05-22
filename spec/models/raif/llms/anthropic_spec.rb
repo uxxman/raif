@@ -48,7 +48,7 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
       end
     end
 
-    context "when the response format is JSON" do
+    context "when the response format is JSON and model does not use json_response tool" do
       let(:response_body) do
         {
           "content" => [{ "type" => "text", "text" => "{\"name\": \"John\", \"age\": 30}" }],
@@ -76,6 +76,169 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
         expect(model_completion.llm_model_key).to eq("anthropic_claude_3_opus")
         expect(model_completion.model_api_name).to eq("claude-3-opus-latest")
         expect(model_completion.response_format).to eq("json")
+      end
+    end
+
+    context "when the response format is JSON and model uses json_response tool" do
+      let(:test_task) { Raif::TestJsonTask.new(creator: FB.build(:raif_test_user)) }
+
+      let(:response_body) do
+        {
+          "content" => [
+            {
+              "type" => "tool_use",
+              "name" => "json_response",
+              "input" => {
+                "joke" => "Why do programmers prefer dark mode?",
+                "answer" => "Because light attracts bugs!"
+              }
+            }
+          ],
+          "usage" => { "input_tokens" => 8, "output_tokens" => 15 }
+        }
+      end
+
+      before do
+        stubs.post("messages") do |env|
+          # Verify the json_response tool is included in the request
+          body = JSON.parse(env.body)
+          expect(body["tools"]).to include(
+            hash_including(
+              "name" => "json_response",
+              "description" => "Generate a structured JSON response based on the provided schema."
+            )
+          )
+          [200, { "Content-Type" => "application/json" }, response_body]
+        end
+      end
+
+      it "extracts JSON response from json_response tool call" do
+        model_completion = llm.chat(
+          messages: [{ role: "user", content: "Tell me a joke" }],
+          response_format: :json,
+          source: test_task
+        )
+
+        expected_json = JSON.generate({
+          "joke" => "Why do programmers prefer dark mode?",
+          "answer" => "Because light attracts bugs!"
+        })
+
+        expect(model_completion.raw_response).to eq(expected_json)
+        expect(model_completion.response_tool_calls).to eq([
+          {
+            "name" => "json_response",
+            "arguments" => {
+              "joke" => "Why do programmers prefer dark mode?",
+              "answer" => "Because light attracts bugs!"
+            }
+          }
+        ])
+        expect(model_completion.completion_tokens).to eq(15)
+        expect(model_completion.prompt_tokens).to eq(8)
+        expect(model_completion.response_format).to eq("json")
+      end
+    end
+
+    context "when JSON response format is requested but model returns mixed content" do
+      let(:test_task) { Raif::TestJsonTask.new(creator: FB.build(:raif_test_user)) }
+
+      let(:response_body) do
+        {
+          "content" => [
+            { "type" => "text", "text" => "Here's the joke you requested:" },
+            {
+              "type" => "tool_use",
+              "name" => "json_response",
+              "input" => {
+                "joke" => "What do you call a fish wearing a crown?",
+                "answer" => "King Neptune!"
+              }
+            }
+          ],
+          "usage" => { "input_tokens" => 10, "output_tokens" => 20 }
+        }
+      end
+
+      before do
+        stubs.post("messages") do |_env|
+          [200, { "Content-Type" => "application/json" }, response_body]
+        end
+      end
+
+      it "extracts JSON from the json_response tool ignoring text content" do
+        model_completion = llm.chat(
+          messages: [{ role: "user", content: "Tell me a joke" }],
+          response_format: :json,
+          source: test_task
+        )
+
+        expected_json = JSON.generate({
+          "joke" => "What do you call a fish wearing a crown?",
+          "answer" => "King Neptune!"
+        })
+
+        expect(model_completion.raw_response).to eq(expected_json)
+        expect(model_completion.response_tool_calls).to include(
+          hash_including(
+            "name" => "json_response",
+            "arguments" => hash_including("joke" => "What do you call a fish wearing a crown?")
+          )
+        )
+      end
+    end
+
+    context "when JSON response format is requested but no json_response tool is used" do
+      let(:test_task) { Raif::TestJsonTask.new(creator: FB.build(:raif_test_user)) }
+
+      let(:response_body) do
+        {
+          "content" => [
+            { "type" => "text", "text" => "{\"joke\": \"Why did the chicken cross the road?\", \"answer\": \"To get to the other side!\"}" }
+          ],
+          "usage" => { "input_tokens" => 5, "output_tokens" => 8 }
+        }
+      end
+
+      before do
+        stubs.post("messages") do |_env|
+          [200, { "Content-Type" => "application/json" }, response_body]
+        end
+      end
+
+      it "falls back to extracting text response when no json_response tool is found" do
+        model_completion = llm.chat(
+          messages: [{ role: "user", content: "Tell me a joke" }],
+          response_format: :json,
+          source: test_task
+        )
+
+        expect(model_completion.raw_response).to eq("{\"joke\": \"Why did the chicken cross the road?\", \"answer\": \"To get to the other side!\"}")
+        expect(model_completion.response_tool_calls).to be_nil
+      end
+    end
+
+    context "when JSON response format is requested but content is nil" do
+      let(:response_body) do
+        {
+          "usage" => { "input_tokens" => 5, "output_tokens" => 0 }
+        }
+      end
+
+      before do
+        stubs.post("messages") do |_env|
+          [200, { "Content-Type" => "application/json" }, response_body]
+        end
+      end
+
+      it "returns nil when content is missing" do
+        model_completion = llm.chat(
+          messages: [{ role: "user", content: "Hello" }],
+          response_format: :json
+        )
+
+        expect(model_completion.raw_response).to be_nil
+        expect(model_completion.response_tool_calls).to be_nil
       end
     end
 

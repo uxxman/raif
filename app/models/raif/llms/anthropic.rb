@@ -80,16 +80,15 @@ protected
   end
 
   def extract_json_response(resp)
-    return extract_text_response(resp) if resp&.dig(:content).nil?
+    return extract_text_response(resp) if resp&.dig("content").nil?
 
     # Look for tool_use blocks in the content array
-    tool_name = "json_response"
     tool_response = resp&.dig("content")&.find do |content|
-      content["type"] == "tool_use" && content["name"] == tool_name
+      content["type"] == "tool_use" && content["name"] == "json_response"
     end
 
     if tool_response
-      JSON.generate(tool_response[:input])
+      JSON.generate(tool_response["input"])
     else
       extract_text_response(resp)
     end

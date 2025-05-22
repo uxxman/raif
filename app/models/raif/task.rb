@@ -78,10 +78,10 @@ module Raif
       task
     end
 
-    def run
+    def run(skip_prompt_population: false)
       update_columns(started_at: Time.current) if started_at.nil?
 
-      populate_prompts
+      populate_prompts unless skip_prompt_population
       messages = [{ "role" => "user", "content" => message_content }]
 
       mc = llm.chat(
@@ -100,6 +100,11 @@ module Raif
       process_model_tool_invocations
       completed!
       self
+    end
+
+    def re_run
+      update_columns(started_at: Time.current)
+      run(skip_prompt_population: true)
     end
 
     # Returns the LLM prompt for the task.
@@ -143,7 +148,7 @@ module Raif
 
     def message_content
       # If there are no images or files, just return the message content can just be a string with the prompt
-      return prompt if images.empty? && files.empty?
+      return prompt if images.blank? && files.blank?
 
       content = [{ "type" => "text", "text" => prompt }]
 
