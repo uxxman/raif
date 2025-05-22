@@ -7,6 +7,7 @@
 - Each model provider's models will be enabled by default if their API key environment variable is present (e.g. OpenAI models will be enabled by default if `ENV["OPENAI_API_KEY"].present?`).
 - AWS Bedrock is now disabled by default. This ensures the `aws-sdk-bedrockruntime` gem is not required unless you use AWS Bedrock models. [#94](https://github.com/CultivateLabs/raif/pull/94)
 - Added `gpt-4.1`, `gpt-4.1-mini`, and `gpt-4.1-nano` models to the default list of supported LLMs. [#74](https://github.com/CultivateLabs/raif/pull/74)
+- Added `claude-4-sonnet` and `claude-4-opus` models to the default list of supported LLMs. [#119](https://github.com/CultivateLabs/raif/pull/119)
 - `Raif::ModelTool` subclasses can now define the tool's arguments schema via a `tool_arguments_schema` block. [#96](https://github.com/CultivateLabs/raif/pull/96)
 - `Raif::ModelTool` subclasses can now define `tool_description` and `example_model_invocation` via blocks. [#99](https://github.com/CultivateLabs/raif/pull/99)
 - `Raif::Task` subclasses can now define a `json_response_schema` block to specify the JSON response schema for the task. [#109](https://github.com/CultivateLabs/raif/pull/109)
