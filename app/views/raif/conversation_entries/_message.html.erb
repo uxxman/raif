@@ -1,5 +1,5 @@
-<div class="d-flex mb-2 chat-message">
-  <div class="d-flex w-100 <%= "justify-content-end" if message_type == :user %>">
+<div class="d-flex my-2 px-3 <%= "justify-content-end" if message_type == :user %>">
+  <div class="d-flex <%= "chat-message-content" if message_type == :user %> <%= "received-message-content" if message_type == :model_response %>">
     <% if message_type == :model_response %>
       <%= render "raif/conversation_entries/model_response_avatar", conversation_entry: local_assigns[:conversation_entry] %>
     <% end %>
