@@ -649,6 +649,7 @@ The admin interface contains sections for:
 - Conversations
 - Agents
 - Model Tool Invocations
+- Stats
 
 
 ### Model Completions
@@ -669,6 +670,9 @@ The admin interface contains sections for:
 ### Model Tool Invocations
   ![Model Tool Invocations Index](./screenshots/admin-model-tool-invocations-index.png)
   ![Model Tool Invocation Detail](./screenshots/admin-model-tool-invocation-show.png)
+
+### Stats
+  ![Stats](./screenshots/admin-stats.png)
 
 # Customization
 
