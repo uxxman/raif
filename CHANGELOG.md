@@ -1,4 +1,4 @@
-## Unreleased
+## v1.1.0
 
 - Added support for images and files/PDF's. [#106](https://github.com/CultivateLabs/raif/pull/106)
 - Added ability to generate embeddings. [#77](https://github.com/CultivateLabs/raif/pull/77)
