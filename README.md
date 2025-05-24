@@ -60,6 +60,8 @@ This will:
 - Copy Raif's database migrations to your application
 - Mount Raif's engine at `/raif` in your application's `config/routes.rb` file
 
+You must configure at least one API key for your LLM provider ([OpenAI](#openai), [Anthropic Claude](#anthropic-claude), [AWS Bedrock](#aws-bedrock-claude), [OpenRouter](#openrouter)). By default, the initializer will load them from environment variables (e.g. `ENV["OPENAI_API_KEY"]`, `ENV["ANTHROPIC_API_KEY"]`, `ENV["OPENROUTER_API_KEY"]`). Alternatively, you can set them directly in `config/initializers/raif.rb`.
+
 Run the migrations. Raif is compatible with both PostgreSQL and MySQL databases.
 ```bash
 rails db:migrate

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Raif
-  class << self
-    attr_accessor :llm_registry
+  def self.llm_registry
+    @llm_registry ||= {}
   end
 
   def self.register_llm(llm_class, llm_config)
