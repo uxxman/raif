@@ -70,6 +70,20 @@ module Raif
     end
 
     def validate!
+      if Raif.llm_registry.blank?
+        puts <<~EOS
+
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          No LLMs are enabled in Raif. Make sure you have an API key configured for at least one LLM provider. You can do this by setting an API key in your environment variables or in config/initializers/raif.rb (e.g. ENV["OPENAI_API_KEY"], ENV["ANTHROPIC_API_KEY"], ENV["OPENROUTER_API_KEY"]).
+
+          See the README for more information: https://github.com/CultivateLabs/raif#setup
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        EOS
+
+        return
+      end
+
       unless Raif.available_llm_keys.include?(default_llm_model_key.to_sym)
         raise Raif::Errors::InvalidConfigError,
           "Raif.config.default_llm_model_key was set to #{default_llm_model_key}, but must be one of: #{Raif.available_llm_keys.join(", ")}"
