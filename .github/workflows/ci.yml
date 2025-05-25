@@ -11,6 +11,9 @@ jobs:
     strategy:
       matrix:
         ruby-version: [ruby-3.3, ruby-3.4.2]
+        rails-version: ["7.2.2.1", "8.0.2.1"]
+    env:
+      RAILS_VERSION: ${{ matrix.rails-version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,19 +22,36 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
-          bundler-cache: true
+          bundler-cache: false
+
+      - name: Create Rails version specific Gemfile
+        run: |
+          cp Gemfile Gemfile.test
+          echo "gem 'rails', '${{ matrix.rails-version }}'" >> Gemfile.test
+        env:
+          BUNDLE_GEMFILE: Gemfile.test
+
+      - name: Install dependencies
+        run: bundle install
+        env:
+          BUNDLE_GEMFILE: Gemfile.test
 
       - name: Run Rubocop
         run: bundle exec rubocop
+        env:
+          BUNDLE_GEMFILE: Gemfile.test
 
       - name: Erb Lint
         run: bundle exec erb_lint --lint-all
+        env:
+          BUNDLE_GEMFILE: Gemfile.test
 
   test-postgres:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         ruby-version: [ruby-3.3, ruby-3.4.2]
+        rails-version: ["~> 7.2.0", "~> 8.0.0"]
     services:
       postgres:
         image: postgres:16
@@ -51,7 +71,9 @@ jobs:
 
     env:
       RAILS_ENV: test
+      RAILS_VERSION: ${{ matrix.rails-version }}
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/raif_dummy_test
+      BUNDLE_GEMFILE: Gemfile.test
       # REDIS_URL: redis://localhost:6379/0
 
     steps:
@@ -65,7 +87,15 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
-          bundler-cache: true
+          bundler-cache: false
+
+      - name: Create Rails version specific Gemfile
+        run: |
+          cp Gemfile Gemfile.test
+          echo "gem 'rails', '${{ matrix.rails-version }}'" >> Gemfile.test
+
+      - name: Install dependencies
+        run: bundle install
 
       - name: Set up database
         run: bin/rails app:db:prepare
@@ -78,6 +108,7 @@ jobs:
     strategy:
       matrix:
         ruby-version: [ruby-3.3, ruby-3.4.2]
+        rails-version: ["~> 7.2.0", "~> 8.0.0"]
     services:
       mysql:
         image: mysql
@@ -89,7 +120,9 @@ jobs:
 
     env:
       RAILS_ENV: test
+      RAILS_VERSION: ${{ matrix.rails-version }}
       DATABASE_URL: mysql2://127.0.0.1:3306
+      BUNDLE_GEMFILE: Gemfile.test
 
     steps:
       - name: Install packages
@@ -102,7 +135,15 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
-          bundler-cache: true
+          bundler-cache: false
+
+      - name: Create Rails version specific Gemfile
+        run: |
+          cp Gemfile Gemfile.test
+          echo "gem 'rails', '${{ matrix.rails-version }}'" >> Gemfile.test
+
+      - name: Install dependencies
+        run: bundle install
 
       - name: Update database.yml for MySQL
         run: |
