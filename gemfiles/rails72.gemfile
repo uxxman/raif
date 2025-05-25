@@ -1,0 +1,23 @@
+source "https://rubygems.org"
+
+gemspec path: ".."
+
+gem "rails", "~> 7.2.0"
+
+gem "puma"
+gem "pg"
+gem "mysql2"
+gem "guard-rspec", require: false
+gem "factory_bot_rails"
+gem "debug", platforms: [:mri]
+gem "rspec-rails"
+gem "rubocop-shopify"
+gem "i18n-tasks"
+gem "erb_lint"
+gem "capybara"
+gem "propshaft"
+gem "importmap-rails"
+gem "stimulus-rails"
+gem "cuprite"
+gem "webmock"
+gem "yard"
