@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddCreatedAtIndexes < ActiveRecord::Migration[8.0]
+class AddCreatedAtIndexes < ActiveRecord::Migration[7.1]
   def change
     add_index :raif_model_completions, :created_at
     add_index :raif_tasks, :created_at

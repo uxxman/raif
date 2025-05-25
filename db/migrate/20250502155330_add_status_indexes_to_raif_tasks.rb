@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddStatusIndexesToRaifTasks < ActiveRecord::Migration[8.0]
+class AddStatusIndexesToRaifTasks < ActiveRecord::Migration[7.1]
   def change
     add_index :raif_tasks, :completed_at
     add_index :raif_tasks, :failed_at
