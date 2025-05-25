@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddCostColumnsToRaifModelCompletions < ActiveRecord::Migration[8.0]
+class AddCostColumnsToRaifModelCompletions < ActiveRecord::Migration[7.1]
   # If you need to backfill cost columns for existing records:
   # Raif::ModelCompletion.find_each do |model_completion|
   #   model_completion.calculate_costs
