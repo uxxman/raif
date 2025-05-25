@@ -10,6 +10,8 @@ ENV["RAILS_ENV"] ||= "test"
 
 require_relative "dummy/config/environment"
 
+puts "Rails version: #{Rails.version}" if ENV["GITHUB_ACTIONS"] == "true"
+
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 
 require "rspec/rails"
