@@ -2,6 +2,7 @@
 
 class Raif::Llms::OpenAiResponses < Raif::Llms::OpenAiBase
   include Raif::Concerns::Llms::OpenAiResponses::MessageFormatting
+  include Raif::Concerns::Llms::OpenAiResponses::ToolFormatting
 
   def perform_model_completion!(model_completion)
     model_completion.temperature ||= default_temperature
@@ -86,42 +87,6 @@ private
     end
 
     parameters
-  end
-
-  def build_tools_array(model_completion)
-    tools = model_completion.available_model_tools_map.map do |_tool_name, tool|
-      validate_json_schema!(tool.tool_arguments_schema)
-
-      {
-        type: "function",
-        name: tool.tool_name,
-        description: tool.tool_description,
-        parameters: tool.tool_arguments_schema
-      }
-    end
-
-    # Add built-in tools if configured
-    if provider_settings[:enable_web_search]
-      tools << { type: "web_search_preview" }
-    end
-
-    if provider_settings[:enable_file_search] && provider_settings[:vector_store_ids].present?
-      tools << {
-        type: "file_search",
-        vector_store_ids: provider_settings[:vector_store_ids]
-      }
-    end
-
-    if provider_settings[:enable_computer_use]
-      tools << {
-        type: "computer_use_preview",
-        display_width: provider_settings[:display_width] || 1024,
-        display_height: provider_settings[:display_height] || 768,
-        environment: provider_settings[:environment] || "browser"
-      }
-    end
-
-    tools
   end
 
 end

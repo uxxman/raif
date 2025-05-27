@@ -2,6 +2,7 @@
 
 class Raif::Llms::OpenAiCompletions < Raif::Llms::OpenAiBase
   include Raif::Concerns::Llms::OpenAiCompletions::MessageFormatting
+  include Raif::Concerns::Llms::OpenAiCompletions::ToolFormatting
 
   def perform_model_completion!(model_completion)
     model_completion.temperature ||= default_temperature
@@ -56,18 +57,7 @@ private
 
     # If the LLM supports native tool use and there are available tools, add them to the parameters
     if supports_native_tool_use? && model_completion.available_model_tools.any?
-      parameters[:tools] = model_completion.available_model_tools_map.map do |_tool_name, tool|
-        validate_json_schema!(tool.tool_arguments_schema)
-
-        {
-          type: "function",
-          function: {
-            name: tool.tool_name,
-            description: tool.tool_description,
-            parameters: tool.tool_arguments_schema
-          }
-        }
-      end
+      parameters[:tools] = build_tools_array(model_completion)
     end
 
     # Add response format if needed

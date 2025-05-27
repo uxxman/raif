@@ -80,8 +80,12 @@ module Raif
       },
     ]
 
-    open_ai_responses_models = open_ai_models.dup.map do |model|
-      model.merge(key: model[:key].to_s.gsub("open_ai_", "open_ai_responses_").to_sym)
+    open_ai_responses_models = open_ai_models.dup.map.with_index do |model, index|
+      model_settings = model.merge(key: model[:key].to_s.gsub("open_ai_", "open_ai_responses_").to_sym)
+      model_settings[:provider_managed_tools_support] = {
+        web_search: true,
+      }
+      model_settings
     end
 
     {
