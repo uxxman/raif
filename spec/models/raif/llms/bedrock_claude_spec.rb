@@ -23,7 +23,7 @@ RSpec.describe Raif::Llms::BedrockClaude, type: :model do
   end
 
   describe "#chat" do
-    it "makes a request to the Anthropic API and processes the text response" do
+    it "makes a request to the Bedrock API and processes the text response" do
       model_completion = llm.chat(messages: [{ role: "user", content: "Hello" }], system_prompt: "You are a helpful assistant.")
       expect(model_completion.raw_response).to eq("Response content")
       expect(model_completion.completion_tokens).to eq(13)
@@ -35,6 +35,7 @@ RSpec.describe Raif::Llms::BedrockClaude, type: :model do
       expect(model_completion.temperature).to eq(0.7)
       expect(model_completion.system_prompt).to eq("You are a helpful assistant.")
       expect(model_completion.messages).to eq([{ "role" => "user", "content" => [{ "text" => "Hello" }] }])
+      expect(model_completion.response_array).to eq([{ "text" => "Response content" }])
     end
   end
 

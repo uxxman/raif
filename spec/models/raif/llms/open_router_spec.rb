@@ -47,6 +47,7 @@ RSpec.describe Raif::Llms::OpenRouter, type: :model do
         expect(model_completion.response_format).to eq("text")
         expect(model_completion.temperature).to eq(0.7)
         expect(model_completion.system_prompt).to eq("You are a helpful assistant.")
+        expect(model_completion.response_array).to eq([{ "message" => { "content" => "Response content" } }])
       end
     end
 

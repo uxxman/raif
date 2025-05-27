@@ -17,6 +17,7 @@ class Raif::Llms::OpenAiResponses < Raif::Llms::OpenAiBase
     model_completion.update!(
       response_tool_calls: extract_response_tool_calls(response_json),
       raw_response: extract_raw_response(response_json),
+      response_array: response_json["output"],
       completion_tokens: response_json.dig("usage", "output_tokens"),
       prompt_tokens: response_json.dig("usage", "input_tokens"),
       total_tokens: response_json.dig("usage", "total_tokens"),

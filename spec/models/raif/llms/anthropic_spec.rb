@@ -45,6 +45,7 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
         expect(model_completion.response_format).to eq("text")
         expect(model_completion.temperature).to eq(0.7)
         expect(model_completion.system_prompt).to eq("You are a helpful assistant.")
+        expect(model_completion.response_array).to eq([{ "type" => "text", "text" => "Response content" }])
       end
     end
 
@@ -76,6 +77,7 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
         expect(model_completion.llm_model_key).to eq("anthropic_claude_3_opus")
         expect(model_completion.model_api_name).to eq("claude-3-opus-latest")
         expect(model_completion.response_format).to eq("json")
+        expect(model_completion.response_array).to eq([{ "type" => "text", "text" => "{\"name\": \"John\", \"age\": 30}" }])
       end
     end
 
@@ -137,6 +139,16 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
         expect(model_completion.completion_tokens).to eq(15)
         expect(model_completion.prompt_tokens).to eq(8)
         expect(model_completion.response_format).to eq("json")
+        expect(model_completion.response_array).to eq([
+          {
+            "type" => "tool_use",
+            "name" => "json_response",
+            "input" => {
+              "joke" => "Why do programmers prefer dark mode?",
+              "answer" => "Because light attracts bugs!"
+            }
+          }
+        ])
       end
     end
 

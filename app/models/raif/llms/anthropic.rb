@@ -17,6 +17,7 @@ class Raif::Llms::Anthropic < Raif::Llm
       extract_text_response(response_json)
     end
 
+    model_completion.response_array = response_json&.dig("content")
     model_completion.response_tool_calls = extract_response_tool_calls(response_json)
     model_completion.completion_tokens = response_json&.dig("usage", "output_tokens")
     model_completion.prompt_tokens = response_json&.dig("usage", "input_tokens")

@@ -17,6 +17,7 @@ class Raif::Llms::BedrockClaude < Raif::Llm
       extract_text_response(resp)
     end
 
+    model_completion.response_array = resp.output.message.content
     model_completion.completion_tokens = resp.usage.output_tokens
     model_completion.prompt_tokens = resp.usage.input_tokens
     model_completion.total_tokens = resp.usage.total_tokens

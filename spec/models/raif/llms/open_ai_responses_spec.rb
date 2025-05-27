@@ -93,6 +93,21 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
         expect(model_completion.llm_model_key).to eq("open_ai_responses_gpt_4o")
         expect(model_completion.model_api_name).to eq("gpt-4o")
         expect(model_completion.response_format_parameter).to be_nil
+        expect(model_completion.response_array).to eq([
+          {
+            "id" => "msg_abc123",
+            "type" => "message",
+            "status" => "completed",
+            "content" => [
+              {
+                "type" => "output_text",
+                "annotations" => [],
+                "text" => "Response content"
+              }
+            ],
+            "role" => "assistant"
+          }
+        ])
       end
     end
 
@@ -179,6 +194,17 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
         expect(model_completion.llm_model_key).to eq("open_ai_responses_gpt_4o")
         expect(model_completion.model_api_name).to eq("gpt-4o")
         expect(model_completion.response_format_parameter).to eq("json_object")
+        expect(model_completion.response_array).to eq([{
+          "id" => "msg_abc123",
+          "type" => "message",
+          "status" => "completed",
+          "content" => [{
+            "type" => "output_text",
+            "annotations" => [],
+            "text" => "{\n  \"joke\": \"Why don't scientists trust atoms? Because they make up everything!\"\n}"
+          }],
+          "role" => "assistant"
+        }])
       end
     end
 
@@ -200,7 +226,7 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
             "type" => "function_call",
             "status" => "completed",
             "arguments" => "{\"query\":\"Ruby on Rails\"}",
-            "call_id" => "call_WOCGRphTJCyulRuYMwFbRhIO",
+            "call_id" => "call_abc123",
             "name" => "wikipedia_search"
           }],
           "parallel_tool_calls" => true,
@@ -256,6 +282,14 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
           }
         ])
         expect(model_completion.raw_response).to eq(nil)
+        expect(model_completion.response_array).to eq([{
+          "id" => "fc_abc123",
+          "type" => "function_call",
+          "status" => "completed",
+          "arguments" => "{\"query\":\"Ruby on Rails\"}",
+          "call_id" => "call_abc123",
+          "name" => "wikipedia_search"
+        }])
       end
     end
 

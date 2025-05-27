@@ -62,6 +62,13 @@ RSpec.describe Raif::Llms::OpenAiCompletions, type: :model do
         expect(model_completion.llm_model_key).to eq("open_ai_gpt_4o")
         expect(model_completion.model_api_name).to eq("gpt-4o")
         expect(model_completion.response_format_parameter).to be_nil
+        expect(model_completion.response_array).to eq([
+          {
+            "message" => {
+              "content" => "Response content"
+            }
+          }
+        ])
       end
     end
 
@@ -119,6 +126,13 @@ RSpec.describe Raif::Llms::OpenAiCompletions, type: :model do
         expect(model_completion.llm_model_key).to eq("open_ai_gpt_4o")
         expect(model_completion.model_api_name).to eq("gpt-4o")
         expect(model_completion.response_format_parameter).to eq("json_object")
+        expect(model_completion.response_array).to eq([
+          {
+            "message" => {
+              "content" => "{\n  \"joke\": \"Why don't scientists trust atoms? Because they make up everything!\"\n}"
+            }
+          }
+        ])
       end
     end
 
