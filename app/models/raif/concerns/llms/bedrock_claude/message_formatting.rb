@@ -3,7 +3,7 @@
 module Raif::Concerns::Llms::BedrockClaude::MessageFormatting
   extend ActiveSupport::Concern
 
-  def format_string_message(content)
+  def format_string_message(content, role: nil)
     { "text" => content }
   end
 

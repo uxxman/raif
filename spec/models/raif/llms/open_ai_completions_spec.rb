@@ -2,7 +2,7 @@
 
 require "rails_helper"
 
-RSpec.describe Raif::Llms::OpenAi, type: :model do
+RSpec.describe Raif::Llms::OpenAiCompletions, type: :model do
   it_behaves_like "an LLM that uses OpenAI's message formatting"
 
   let(:llm){ Raif.llm(:open_ai_gpt_4o) }
