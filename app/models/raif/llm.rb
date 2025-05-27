@@ -22,8 +22,17 @@ module Raif
 
     alias_method :supports_native_tool_use?, :supports_native_tool_use
 
-    def initialize(key:, api_name:, model_provider_settings: {}, provider_managed_tools_support: {}, supports_native_tool_use: true, temperature: nil, max_completion_tokens: nil,
-      input_token_cost: nil, output_token_cost: nil)
+    def initialize(
+      key:,
+      api_name:,
+      model_provider_settings: {},
+      provider_managed_tools_support: {},
+      supports_native_tool_use: true,
+      temperature: nil,
+      max_completion_tokens: nil,
+      input_token_cost: nil,
+      output_token_cost: nil
+    )
       @key = key
       @api_name = api_name
       @provider_settings = model_provider_settings

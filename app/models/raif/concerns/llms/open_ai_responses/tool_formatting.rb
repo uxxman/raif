@@ -29,7 +29,7 @@ module Raif::Concerns::Llms::OpenAiResponses::ToolFormatting
       { type: "web_search_preview" }
     else
       raise Raif::Errors::UnsupportedFeatureError,
-        "Invalid provider-managed tool: #{tool.name}. Supported tools are: #{Raif::ModelTools::ProviderManaged::Base.subclasses.map(&:name).join(", ")}"
+        "Invalid provider-managed tool: #{tool.name}"
     end
   end
 end

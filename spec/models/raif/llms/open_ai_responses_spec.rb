@@ -106,7 +106,7 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
           "background" => false,
           "error" => nil,
           "incomplete_details" => nil,
-          "instructions" => "You are a helpful assistant who specializes in telling jokes. Your response should be a properly formatted JSON object containing a single `joke` key. Do not include any other text in your response outside the JSON object. Return your response as json.",
+          "instructions" => "You are a helpful assistant who specializes in telling jokes. Your response should be a properly formatted JSON object containing a single `joke` key. Do not include any other text in your response outside the JSON object. Return your response as json.", # rubocop:disable Layout/LineLength
           "max_output_tokens" => nil,
           "model" => "gpt-4.1-mini-2025-04-14",
           "output" => [{
