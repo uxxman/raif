@@ -88,7 +88,7 @@ RSpec.describe Raif::Llms::OpenRouter, type: :model do
           response_format: :json
         )
 
-        expect(model_completion.raw_response).to eq("```json\n{\n  \"joke\": \"Why don't scientists trust atoms? Because they make up everything!\"\n}\n```")
+        expect(model_completion.raw_response).to eq("```json\n{\n  \"joke\": \"Why don't scientists trust atoms? Because they make up everything!\"\n}\n```") # rubocop:disable Layout/LineLength
         expect(model_completion.response_format).to eq("json")
         expect(model_completion.parsed_response).to eq({ "joke" => "Why don't scientists trust atoms? Because they make up everything!" })
         expect(model_completion.completion_tokens).to eq(31)
