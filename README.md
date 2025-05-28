@@ -88,7 +88,7 @@ Configure your LLM providers. You'll need at least one of:
 
 ## OpenAI
 
-Raif supports both OpenAI's Completions API and the newer Responses API, which provides access to provider-managed tools like web search, code execution, and image generation.
+Raif supports both OpenAI's [Completions API](https://platform.openai.com/docs/api-reference/chat) and the newer [Responses API](https://platform.openai.com/docs/api-reference/responses), which provides access to provider-managed tools like web search, code execution, and image generation.
 
 ### OpenAI Completions API
 ```ruby
