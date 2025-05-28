@@ -110,7 +110,7 @@ Currently supported OpenAI Completions API models:
 ### OpenAI Responses API
 ```ruby
 Raif.configure do |config|
-  config.open_ai_responses_models_enabled = true
+  config.open_ai_models_enabled = true
   config.open_ai_api_key = ENV["OPENAI_API_KEY"]
   config.default_llm_model_key = "open_ai_responses_gpt_4o"
 end
