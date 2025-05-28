@@ -306,40 +306,110 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
       end
     end
 
-    context "when the response includes tool use" do
+    context "when using developer-managed tools" do
       let(:response_body) do
-        {
-          "content" => [
-            {
-              "type" => "tool_use",
-              "name" => "calculator",
-              "input" => {
-                "operation" => "add",
-                "operands" => [5, 7]
-              }
-            }
-          ],
-          "usage" => { "input_tokens" => 8, "output_tokens" => 12 }
-        }
+        json_file = File.read(Raif::Engine.root.join("spec/support/llm_responses/anthropic/developer_managed_fetch_url.json"))
+        JSON.parse(json_file)
       end
 
       before do
-        stubs.post("messages") do |_env|
+        stubs.post("messages") do |env|
+          body = JSON.parse(env.body)
+          expect(body["tools"]).to eq([{
+            "name" => "fetch_url",
+            "description" => "Fetch a URL and return the page content as markdown",
+            "input_schema" => {
+              "type" => "object",
+              "additionalProperties" => false,
+              "properties" => { "url" => { "type" => "string", "description" => "The URL to fetch content from" } },
+              "required" => ["url"]
+            }
+          }])
+
           [200, { "Content-Type" => "application/json" }, response_body]
         end
       end
 
       it "extracts tool calls correctly" do
         model_completion = llm.chat(
-          messages: [{ role: "user", content: "Add 5 + 7" }],
-          system_prompt: "You can use tools."
+          messages: [{ role: "user", content: "What's on the homepage of https://www.wsj.com today?" }],
+          available_model_tools: [Raif::ModelTools::FetchUrl]
         )
+
+        expect(model_completion.raw_response).to eq("I'll fetch the content of the Wall Street Journal homepage for you.")
+        expect(model_completion.available_model_tools).to eq(["Raif::ModelTools::FetchUrl"])
+        expect(model_completion.response_array).to eq([
+          {
+            "type" => "text",
+            "text" => "I'll fetch the content of the Wall Street Journal homepage for you."
+          },
+          {
+            "id" => "toolu_abc123",
+            "input" => { "url" => "https://www.wsj.com" },
+            "name" => "fetch_url",
+            "type" => "tool_use"
+          }
+        ])
 
         expect(model_completion.response_tool_calls).to eq([
           {
-            "name" => "calculator",
-            "arguments" => { "operation" => "add", "operands" => [5, 7] }
+            "name" => "fetch_url",
+            "arguments" => { "url" => "https://www.wsj.com" }
           }
+        ])
+      end
+    end
+
+    context "when using provider-managed tools" do
+      let(:response_body) do
+        json_file = File.read(Raif::Engine.root.join("spec/support/llm_responses/anthropic/provider_managed_web_search.json"))
+        JSON.parse(json_file)
+      end
+
+      before do
+        stubs.post("messages") do |env|
+          body = JSON.parse(env.body)
+          expect(body["tools"]).to eq([{
+            "type" => "web_search_20250305",
+            "name" => "web_search",
+            "max_uses" => 5
+          }])
+
+          [200, { "Content-Type" => "application/json" }, response_body]
+        end
+      end
+
+      it "extracts tool calls correctly" do
+        model_completion = llm.chat(
+          messages: [{ role: "user", content: "What are the latest developments in Ruby on Rails?" }],
+          available_model_tools: [Raif::ModelTools::ProviderManaged::WebSearch]
+        )
+
+        expect(model_completion.raw_response).to eq("Based on the search results, here are the latest developments in Ruby on Rails:\n\n1. Recent Versions and Support\n\nThe latest update was Rails 7.0.5 in May 2023\n. However, \nmore recent versions include:\n- 7.2.0 (August 2024)\n- 8.0.0 (November 2024)\n\n\n2. Support Policy\n\nStarting with version 7.2, each minor release will be:\n- Supported for 1 year with bug fixes\n- Supported for 2 years with security fixes\n\n\n3. Notable Developments\n\nRuby on Rails has experienced a resurgence, with the Hired 2023 State of Software Engineers report finding it the most in-demand skill for software engineering roles. Proficiency in Ruby on Rails resulted in 1.64 times more interview opportunities.\n\n\n4. Key Innovations\n\nThe resurgence has been significantly bolstered by innovations like Hotwire and improvements in JavaScript integration\n. \nPrevious major updates (Rails 6.0) brought significant improvements, including:\n- Action Mailbox for handling incoming emails\n- Action Text for rich-text content and editing\n- Multiple database support\n- Parallel testing\n- Webpacker as the default JavaScript builder\n- Zeitwerk code loader\n\n\n5. Future Outlook\n\nRuby on Rails continues to provide a framework that enables faster development and speed to market. Development teams are increasingly looking for tools that help them produce more with the same or fewer resources, which is where Rails excels.\n\n\n6. Community and Adoption\n\nWell-known sites using Ruby on Rails include Airbnb, GitHub, Twitch, and Shopify\n. \nWhile it took a backseat to JavaScript in the late 2010s, many developers continued to use it to rapidly build API layers for JavaScript front-ends, largely because Rails makes development so simple.\n\n\nInteresting Perspective\n\nThe framework is gaining recognition not just for its technical capabilities, but also for improving developer happiness. As a free, open-source project, it enables teams to rapidly develop innovative web apps for clients who need quick deployment, potentially helping developers maintain a better work-life balance.") # rubocop:disable Layout/LineLength
+        expect(model_completion.available_model_tools).to eq(["Raif::ModelTools::ProviderManaged::WebSearch"])
+        expect(model_completion.response_array.map{|v| v["type"] }).to eq([
+          "server_tool_use",
+          "web_search_tool_result",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text",
+          "text"
         ])
       end
     end

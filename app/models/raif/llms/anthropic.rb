@@ -59,7 +59,9 @@ protected
   end
 
   def extract_text_response(resp)
-    resp&.dig("content")&.first&.dig("text")
+    return if resp&.dig("content").blank?
+
+    resp.dig("content").select{|v| v["type"] == "text" }.map{|v| v["text"] }.join("\n")
   end
 
   def extract_json_response(resp)
