@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddResponseIdAndResponseArrayToModelCompletions < ActiveRecord::Migration[8.0]
+class AddResponseIdAndResponseArrayToModelCompletions < ActiveRecord::Migration[7.1]
   def change
     json_column_type = if connection.adapter_name.downcase.include?("postgresql")
       :jsonb
