@@ -476,6 +476,193 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
     end
   end
 
+  describe "#build_tools_parameter" do
+    let(:model_completion) do
+      Raif::ModelCompletion.new(
+        messages: [{ role: "user", content: "Hello" }],
+        llm_model_key: "anthropic_claude_3_5_haiku",
+        model_api_name: "claude-3-5-haiku-latest",
+        available_model_tools: available_model_tools,
+        response_format: response_format,
+        source: source
+      )
+    end
+
+    let(:response_format) { "text" }
+    let(:source) { nil }
+
+    context "with no tools and text response format" do
+      let(:available_model_tools) { [] }
+
+      it "returns an empty array" do
+        result = llm.send(:build_tools_parameter, model_completion)
+        expect(result).to eq([])
+      end
+    end
+
+    context "with JSON response format and schema" do
+      let(:available_model_tools) { [] }
+      let(:response_format) { "json" }
+      let(:source) { Raif::TestJsonTask.new(creator: FB.build(:raif_test_user)) }
+
+      it "includes json_response tool when JSON format is requested with schema" do
+        result = llm.send(:build_tools_parameter, model_completion)
+
+        expect(result).to eq([{
+          name: "json_response",
+          description: "Generate a structured JSON response based on the provided schema.",
+          input_schema: {
+            type: "object",
+            additionalProperties: false,
+            required: ["joke", "answer"],
+            properties: {
+              joke: { type: "string" },
+              answer: { type: "string" }
+            }
+          }
+        }])
+      end
+    end
+
+    context "with developer-managed tools" do
+      let(:available_model_tools) { [Raif::TestModelTool] }
+
+      it "formats developer-managed tools correctly" do
+        result = llm.send(:build_tools_parameter, model_completion)
+
+        expect(result).to eq([{
+          name: "test_model_tool",
+          description: "Mock Tool Description",
+          input_schema: {
+            type: "object",
+            additionalProperties: false,
+            required: ["items"],
+            properties: {
+              items: {
+                type: "array",
+                items: {
+                  type: "object",
+                  additionalProperties: false,
+                  properties: {
+                    title: { type: "string", description: "The title of the item" },
+                    description: { type: "string" }
+                  },
+                  required: ["title", "description"]
+                }
+              }
+            }
+          }
+        }])
+      end
+    end
+
+    context "with provider-managed tools" do
+      context "with WebSearch tool" do
+        let(:available_model_tools) { [Raif::ModelTools::ProviderManaged::WebSearch] }
+
+        it "formats WebSearch tool correctly" do
+          result = llm.send(:build_tools_parameter, model_completion)
+
+          expect(result).to eq([{
+            type: "web_search_20250305",
+            name: "web_search",
+            max_uses: 5
+          }])
+        end
+      end
+
+      context "with CodeExecution tool" do
+        let(:available_model_tools) { [Raif::ModelTools::ProviderManaged::CodeExecution] }
+
+        it "formats CodeExecution tool correctly" do
+          result = llm.send(:build_tools_parameter, model_completion)
+
+          expect(result).to eq([{
+            type: "code_execution_20250522",
+            name: "code_execution"
+          }])
+        end
+      end
+
+      context "with ImageGeneration tool" do
+        let(:available_model_tools) { [Raif::ModelTools::ProviderManaged::ImageGeneration] }
+
+        it "raises Raif::Errors::UnsupportedFeatureError" do
+          expect do
+            llm.send(:build_tools_parameter, model_completion)
+          end.to raise_error(Raif::Errors::UnsupportedFeatureError)
+        end
+      end
+    end
+
+    context "with mixed tool types and JSON response" do
+      let(:available_model_tools) { [Raif::TestModelTool, Raif::ModelTools::ProviderManaged::WebSearch] }
+      let(:response_format) { "json" }
+      let(:source) { Raif::TestJsonTask.new(creator: FB.build(:raif_test_user)) }
+
+      it "includes json_response tool and formats all tools correctly" do
+        result = llm.send(:build_tools_parameter, model_completion)
+
+        expect(result).to contain_exactly(
+          {
+            name: "json_response",
+            description: "Generate a structured JSON response based on the provided schema.",
+            input_schema: {
+              type: "object",
+              additionalProperties: false,
+              required: ["joke", "answer"],
+              properties: {
+                joke: { type: "string" },
+                answer: { type: "string" }
+              }
+            }
+          },
+          {
+            name: "test_model_tool",
+            description: "Mock Tool Description",
+            input_schema: {
+              type: "object",
+              additionalProperties: false,
+              required: ["items"],
+              properties: {
+                items: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    additionalProperties: false,
+                    properties: {
+                      title: { type: "string", description: "The title of the item" },
+                      description: { type: "string" }
+                    },
+                    required: ["title", "description"]
+                  }
+                }
+              }
+            }
+          },
+          {
+            type: "web_search_20250305",
+            name: "web_search",
+            max_uses: 5
+          }
+        )
+      end
+    end
+
+    context "when native tool use is not supported" do
+      let(:available_model_tools) { [Raif::TestModelTool] }
+
+      before do
+        allow(llm).to receive(:supports_native_tool_use?).and_return(false)
+      end
+
+      it "does not include developer-managed tools" do
+        result = llm.send(:build_tools_parameter, model_completion)
+        expect(result).to eq([])
+      end
+    end
+  end
+
   describe "#format_messages" do
     it "formats the messages correctly with a string as the content" do
       messages = [{ "role" => "user", "content" => "Hello" }]

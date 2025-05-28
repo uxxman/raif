@@ -521,6 +521,98 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
     end
   end
 
+  describe "#build_tools_parameter" do
+    let(:model_completion) do
+      Raif::ModelCompletion.new(
+        messages: [{ role: "user", content: "Hello" }],
+        llm_model_key: "open_ai_responses_gpt_4o",
+        model_api_name: "gpt-4o",
+        available_model_tools: available_model_tools
+      )
+    end
+
+    context "with no tools" do
+      let(:available_model_tools) { [] }
+
+      it "returns an empty array" do
+        result = llm.send(:build_tools_parameter, model_completion)
+        expect(result).to eq([])
+      end
+    end
+
+    context "with developer-managed tools" do
+      let(:available_model_tools) { [Raif::TestModelTool] }
+
+      it "formats developer-managed tools correctly" do
+        result = llm.send(:build_tools_parameter, model_completion)
+
+        expect(result).to eq([{
+          type: "function",
+          name: "test_model_tool",
+          description: "Mock Tool Description",
+          parameters: {
+            type: "object",
+            additionalProperties: false,
+            required: ["items"],
+            properties: {
+              items: {
+                type: "array",
+                items: {
+                  type: "object",
+                  additionalProperties: false,
+                  properties: {
+                    title: { type: "string", description: "The title of the item" },
+                    description: { type: "string" }
+                  },
+                  required: ["title", "description"]
+                }
+              }
+            }
+          }
+        }])
+      end
+    end
+
+    context "with provider-managed tools" do
+      context "with WebSearch tool" do
+        let(:available_model_tools) { [Raif::ModelTools::ProviderManaged::WebSearch] }
+
+        it "formats WebSearch tool correctly" do
+          result = llm.send(:build_tools_parameter, model_completion)
+
+          expect(result).to eq([{
+            type: "web_search_preview"
+          }])
+        end
+      end
+
+      context "with CodeExecution tool" do
+        let(:available_model_tools) { [Raif::ModelTools::ProviderManaged::CodeExecution] }
+
+        it "formats CodeExecution tool correctly" do
+          result = llm.send(:build_tools_parameter, model_completion)
+
+          expect(result).to eq([{
+            type: "code_interpreter",
+            container: { "type": "auto" }
+          }])
+        end
+      end
+
+      context "with ImageGeneration tool" do
+        let(:available_model_tools) { [Raif::ModelTools::ProviderManaged::ImageGeneration] }
+
+        it "formats ImageGeneration tool correctly" do
+          result = llm.send(:build_tools_parameter, model_completion)
+
+          expect(result).to eq([{
+            type: "image_generation"
+          }])
+        end
+      end
+    end
+  end
+
   describe "#determine_response_format" do
     context "with text response format" do
       let(:model_completion) do

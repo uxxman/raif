@@ -42,7 +42,7 @@ RSpec.describe Raif::Llms::BedrockClaude, type: :model do
       end
     end
 
-    fcontext "when using developer-managed tools" do
+    context "when using developer-managed tools" do
       before do
         client.stub_responses(:converse, {
           output: {
@@ -176,6 +176,189 @@ RSpec.describe Raif::Llms::BedrockClaude, type: :model do
           ]
         }
       ])
+    end
+  end
+
+  describe "#build_tools_parameter" do
+    let(:model_completion) do
+      Raif::ModelCompletion.new(
+        messages: [{ role: "user", content: "Hello" }],
+        llm_model_key: "bedrock_claude_3_5_sonnet",
+        model_api_name: "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+        available_model_tools: available_model_tools,
+        response_format: response_format,
+        source: source
+      )
+    end
+    let(:response_format) { "text" }
+    let(:source) { nil }
+
+    context "with no tools and text response format" do
+      let(:available_model_tools) { [] }
+
+      it "returns an empty hash" do
+        result = llm.send(:build_tools_parameter, model_completion)
+        expect(result).to eq({})
+      end
+    end
+
+    context "with JSON response format and schema" do
+      let(:available_model_tools) { [] }
+      let(:response_format) { "json" }
+      let(:source) { Raif::TestJsonTask.new(creator: FB.build(:raif_test_user)) }
+
+      it "includes json_response tool when JSON format is requested with schema" do
+        result = llm.send(:build_tools_parameter, model_completion)
+
+        expect(result).to eq({
+          tools: [{
+            tool_spec: {
+              name: "json_response",
+              description: "Generate a structured JSON response based on the provided schema.",
+              input_schema: {
+                json: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["joke", "answer"],
+                  properties: {
+                    joke: { type: "string" },
+                    answer: { type: "string" }
+                  }
+                }
+              }
+            }
+          }]
+        })
+      end
+    end
+
+    context "with developer-managed tools" do
+      let(:available_model_tools) { [Raif::TestModelTool] }
+
+      it "formats developer-managed tools correctly" do
+        result = llm.send(:build_tools_parameter, model_completion)
+
+        expect(result).to eq({
+          tools: [{
+            tool_spec: {
+              name: "test_model_tool",
+              description: "Mock Tool Description",
+              input_schema: {
+                json: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["items"],
+                  properties: {
+                    items: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        additionalProperties: false,
+                        properties: {
+                          title: { type: "string", description: "The title of the item" },
+                          description: { type: "string" }
+                        },
+                        required: ["title", "description"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }]
+        })
+      end
+    end
+
+    context "with provider-managed tools" do
+      context "with WebSearch tool" do
+        let(:available_model_tools) { [Raif::ModelTools::ProviderManaged::WebSearch] }
+
+        it "raises UnsupportedFeatureError for provider-managed tools" do
+          expect do
+            llm.send(:build_tools_parameter, model_completion)
+          end.to raise_error(Raif::Errors::UnsupportedFeatureError, /Invalid provider-managed tool/)
+        end
+      end
+
+      context "with CodeExecution tool" do
+        let(:available_model_tools) { [Raif::ModelTools::ProviderManaged::CodeExecution] }
+
+        it "raises UnsupportedFeatureError for provider-managed tools" do
+          expect do
+            llm.send(:build_tools_parameter, model_completion)
+          end.to raise_error(Raif::Errors::UnsupportedFeatureError, /Invalid provider-managed tool/)
+        end
+      end
+
+      context "with ImageGeneration tool" do
+        let(:available_model_tools) { [Raif::ModelTools::ProviderManaged::ImageGeneration] }
+
+        it "raises UnsupportedFeatureError for provider-managed tools" do
+          expect do
+            llm.send(:build_tools_parameter, model_completion)
+          end.to raise_error(Raif::Errors::UnsupportedFeatureError, /Invalid provider-managed tool/)
+        end
+      end
+    end
+
+    context "with mixed tool types and JSON response" do
+      let(:available_model_tools) { [Raif::TestModelTool] }
+      let(:response_format) { "json" }
+      let(:source) { Raif::TestJsonTask.new(creator: FB.build(:raif_test_user)) }
+
+      it "includes json_response tool and formats developer-managed tools correctly" do
+        result = llm.send(:build_tools_parameter, model_completion)
+
+        expect(result).to eq({
+          tools: [
+            {
+              tool_spec: {
+                name: "json_response",
+                description: "Generate a structured JSON response based on the provided schema.",
+                input_schema: {
+                  json: {
+                    type: "object",
+                    additionalProperties: false,
+                    required: ["joke", "answer"],
+                    properties: {
+                      joke: { type: "string" },
+                      answer: { type: "string" }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              tool_spec: {
+                name: "test_model_tool",
+                description: "Mock Tool Description",
+                input_schema: {
+                  json: {
+                    type: "object",
+                    additionalProperties: false,
+                    required: ["items"],
+                    properties: {
+                      items: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          additionalProperties: false,
+                          properties: {
+                            title: { type: "string", description: "The title of the item" },
+                            description: { type: "string" }
+                          },
+                          required: ["title", "description"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        })
+      end
     end
   end
 
