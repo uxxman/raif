@@ -117,7 +117,7 @@ Currently supported Anthropic models:
 Raif.configure do |config|
   config.anthropic_bedrock_models_enabled = true
   config.aws_bedrock_region = "us-east-1"
-  config.default_llm_model_key = "bedrock_claude_3_5_sonnet"
+  config.default_llm_model_key = "bedrock_nova_pro"
 end
 ```
 
@@ -126,6 +126,7 @@ Currently supported Bedrock models:
 - `bedrock_claude_3_7_sonnet`
 - `bedrock_claude_3_5_haiku`
 - `bedrock_claude_3_opus`
+- `bedrock_nova_pro`
 
 Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/BedrockRuntime/Client.html) and AWS credentials should be configured via the AWS SDK (environment variables, IAM role, etc.)
 

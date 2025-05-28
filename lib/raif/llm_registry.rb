@@ -167,6 +167,13 @@ module Raif
           output_token_cost: 0.075 / 1000,
           max_completion_tokens: 4096
         },
+        {
+          key: :bedrock_nova_pro,
+          api_name: "amazon.nova-pro-v1:0",
+          input_token_cost: 0.00105 / 1000,
+          output_token_cost: 0.0042 / 1000,
+          max_completion_tokens: 4096
+        }
       ],
       Raif::Llms::OpenRouter => [
         {

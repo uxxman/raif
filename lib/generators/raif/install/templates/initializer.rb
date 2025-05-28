@@ -56,6 +56,7 @@ Raif.configure do |config|
   #   bedrock_claude_3_7_sonnet
   #   bedrock_claude_3_5_haiku
   #   bedrock_claude_3_opus
+  #   bedrock_nova_pro
   #   open_router_claude_3_7_sonnet
   #   open_router_llama_3_3_70b_instruct
   #   open_router_llama_3_1_8b_instruct
