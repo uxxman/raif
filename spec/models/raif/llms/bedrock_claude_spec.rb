@@ -5,37 +5,103 @@ require "rails_helper"
 RSpec.describe Raif::Llms::BedrockClaude, type: :model do
   let(:llm){ Raif.llm(:bedrock_claude_3_5_sonnet) }
   let(:client) { Aws::BedrockRuntime::Client.new(stub_responses: true) }
-  let(:bedrock_response) { "Response content" }
 
   before do
     allow(llm).to receive(:bedrock_client).and_return(client)
-    client.stub_responses(:converse, {
-      output: {
-        message: {
-          role: "assistant",
-          content: [{ text: bedrock_response }]
-        }
-      },
-      stop_reason: "end_turn",
-      usage: { input_tokens: 8, output_tokens: 13, total_tokens: 21 },
-      metrics: { latency_ms: 540 }
-    })
   end
 
   describe "#chat" do
-    it "makes a request to the Bedrock API and processes the text response" do
-      model_completion = llm.chat(messages: [{ role: "user", content: "Hello" }], system_prompt: "You are a helpful assistant.")
-      expect(model_completion.raw_response).to eq("Response content")
-      expect(model_completion.completion_tokens).to eq(13)
-      expect(model_completion.prompt_tokens).to eq(8)
-      expect(model_completion.total_tokens).to eq(21)
-      expect(model_completion.llm_model_key).to eq("bedrock_claude_3_5_sonnet")
-      expect(model_completion.model_api_name).to eq("us.anthropic.claude-3-5-sonnet-20241022-v2:0")
-      expect(model_completion.response_format).to eq("text")
-      expect(model_completion.temperature).to eq(0.7)
-      expect(model_completion.system_prompt).to eq("You are a helpful assistant.")
-      expect(model_completion.messages).to eq([{ "role" => "user", "content" => [{ "text" => "Hello" }] }])
-      expect(model_completion.response_array).to eq([{ "text" => "Response content" }])
+    context "when the response format is text" do
+      before do
+        client.stub_responses(:converse, {
+          output: {
+            message: {
+              role: "assistant",
+              content: [{ text: "Response content" }]
+            }
+          },
+          stop_reason: "end_turn",
+          usage: { input_tokens: 8, output_tokens: 13, total_tokens: 21 },
+          metrics: { latency_ms: 540 }
+        })
+      end
+
+      it "makes a request to the Bedrock API and processes the text response" do
+        model_completion = llm.chat(messages: [{ role: "user", content: "Hello" }], system_prompt: "You are a helpful assistant.")
+        expect(model_completion.raw_response).to eq("Response content")
+        expect(model_completion.completion_tokens).to eq(13)
+        expect(model_completion.prompt_tokens).to eq(8)
+        expect(model_completion.total_tokens).to eq(21)
+        expect(model_completion.llm_model_key).to eq("bedrock_claude_3_5_sonnet")
+        expect(model_completion.model_api_name).to eq("us.anthropic.claude-3-5-sonnet-20241022-v2:0")
+        expect(model_completion.response_format).to eq("text")
+        expect(model_completion.temperature).to eq(0.7)
+        expect(model_completion.system_prompt).to eq("You are a helpful assistant.")
+        expect(model_completion.messages).to eq([{ "role" => "user", "content" => [{ "text" => "Hello" }] }])
+        expect(model_completion.response_array).to eq([{ "text" => "Response content" }])
+      end
+    end
+
+    fcontext "when using developer-managed tools" do
+      before do
+        client.stub_responses(:converse, {
+          output: {
+            message: {
+              role: "assistant",
+              content: [
+                { text: "I'll fetch the content of the Wall Street Journal homepage for you." },
+                {
+                  tool_use: {
+                    tool_use_id: "call_RNzLf3E3dsfjh98mRsQYabd1mSB",
+                    name: "fetch_url",
+                    input: { "url" => "https://www.wsj.com" }
+                  }
+                }
+              ]
+            }
+          },
+          stop_reason: "tool_use",
+          usage: { input_tokens: 364, output_tokens: 75, total_tokens: 439 },
+          metrics: { latency_ms: 540 }
+        })
+      end
+
+      it "extracts tool calls correctly" do
+        model_completion = llm.chat(
+          messages: [{ role: "user", content: "What's on the homepage of https://www.wsj.com today?" }],
+          available_model_tools: [Raif::ModelTools::FetchUrl]
+        )
+
+        expect(model_completion.raw_response).to eq("I'll fetch the content of the Wall Street Journal homepage for you.")
+        expect(model_completion.available_model_tools).to eq(["Raif::ModelTools::FetchUrl"])
+        expect(model_completion.response_array).to eq([
+          { "text" => "I'll fetch the content of the Wall Street Journal homepage for you." },
+          {
+            "tool_use" =>
+              {
+                "tool_use_id" => "call_RNzLf3E3dsfjh98mRsQYabd1mSB",
+                "name" => "fetch_url",
+                "input" => { "url" => "https://www.wsj.com" }
+              }
+          }
+        ])
+
+        expect(model_completion.response_tool_calls).to eq([{
+          "name" => "fetch_url",
+          "arguments" => { "url" => "https://www.wsj.com" }
+        }])
+      end
+    end
+
+    context "when using provider-managed tools" do
+      it "raises Raif::Errors::UnsupportedFeatureError" do
+        expect do
+          llm.chat(
+            messages: [{ role: "user", content: "What are the latest developments in Ruby on Rails?" }],
+            available_model_tools: [Raif::ModelTools::ProviderManaged::WebSearch]
+          )
+        end.to raise_error(Raif::Errors::UnsupportedFeatureError)
+      end
     end
   end
 

@@ -308,7 +308,7 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
 
     context "when using developer-managed tools" do
       let(:response_body) do
-        json_file = File.read(Raif::Engine.root.join("spec/support/llm_responses/anthropic/developer_managed_fetch_url.json"))
+        json_file = File.read(Raif::Engine.root.join("spec/fixtures/llm_responses/anthropic/developer_managed_fetch_url.json"))
         JSON.parse(json_file)
       end
 
@@ -362,7 +362,7 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
 
     context "when using provider-managed tools" do
       let(:response_body) do
-        json_file = File.read(Raif::Engine.root.join("spec/support/llm_responses/anthropic/provider_managed_web_search.json"))
+        json_file = File.read(Raif::Engine.root.join("spec/fixtures/llm_responses/anthropic/provider_managed_web_search.json"))
         JSON.parse(json_file)
       end
 

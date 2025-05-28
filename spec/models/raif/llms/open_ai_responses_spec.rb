@@ -210,89 +210,80 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
       end
     end
 
-    context "when the response includes function calls" do
+    context "when using developer-managed tools" do
       let(:response_body) do
-        {
-          "id" => "resp_abc123",
-          "object" => "response",
-          "created_at" => 1748370334,
-          "status" => "completed",
-          "background" => false,
-          "error" => nil,
-          "incomplete_details" => nil,
-          "instructions" => nil,
-          "max_output_tokens" => nil,
-          "model" => "gpt-4.1-mini-2025-04-14",
-          "output" => [{
-            "id" => "fc_abc123",
-            "type" => "function_call",
-            "status" => "completed",
-            "arguments" => "{\"query\":\"Ruby on Rails\"}",
-            "call_id" => "call_abc123",
-            "name" => "wikipedia_search"
-          }],
-          "parallel_tool_calls" => true,
-          "previous_response_id" => nil,
-          "reasoning" => { "effort" => nil, "summary" => nil },
-          "service_tier" => "default",
-          "store" => true,
-          "temperature" => 0.7,
-          "text" => { "format" => { "type" => "text" } },
-          "tool_choice" => "auto",
-          "tools" => [{
-            "type" => "function",
-            "description" => "Search Wikipedia for information",
-            "name" => "wikipedia_search",
-            "parameters" => {
-              "type" => "object",
-              "additionalProperties" => false,
-              "properties" => { "query" => { "type" => "string", "description" => "The query to search Wikipedia for" } },
-              "required" => ["query"]
-            },
-            "strict" => true
-          }],
-          "top_p" => 1.0,
-          "truncation" => "disabled",
-          "usage" => {
-            "input_tokens" => 54,
-            "input_tokens_details" => { "cached_tokens" => 0 },
-            "output_tokens" => 17,
-            "output_tokens_details" => { "reasoning_tokens" => 0 },
-            "total_tokens" => 71
-          },
-          "user" => nil,
-          "metadata" => {}
-        }
+        json_file = File.read(Raif::Engine.root.join("spec/fixtures/llm_responses/open_ai_responses/developer_managed_fetch_url.json"))
+        JSON.parse(json_file)
       end
 
       before do
-        stubs.post("responses") do |_env|
+        stubs.post("responses") do |env|
+          body = JSON.parse(env.body)
+
+          expect(body["tools"]).to eq([{
+            "type" => "function",
+            "name" => "fetch_url",
+            "description" => "Fetch a URL and return the page content as markdown",
+            "parameters" => {
+              "type" => "object",
+              "additionalProperties" => false,
+              "properties" => { "url" => { "type" => "string", "description" => "The URL to fetch content from" } },
+              "required" => ["url"]
+            }
+          }])
+
           [200, { "Content-Type" => "application/json" }, response_body]
         end
       end
 
-      it "extracts tool calls from the response" do
+      it "extracts tool calls correctly" do
         model_completion = llm.chat(
-          messages: [{ role: "user", content: "What Wikipedia pages are there about Ruby on Rails?" }],
-          available_model_tools: [Raif::ModelTools::WikipediaSearch]
+          messages: [{ role: "user", content: "What's on the homepage of https://www.wsj.com today?" }],
+          available_model_tools: [Raif::ModelTools::FetchUrl]
         )
 
-        expect(model_completion.response_tool_calls).to eq([
-          {
-            "name" => "wikipedia_search",
-            "arguments" => { "query" => "Ruby on Rails" }
-          }
-        ])
         expect(model_completion.raw_response).to eq(nil)
-        expect(model_completion.response_id).to eq("resp_abc123")
+        expect(model_completion.available_model_tools).to eq(["Raif::ModelTools::FetchUrl"])
         expect(model_completion.response_array).to eq([{
-          "id" => "fc_abc123",
+          "id" => "fc_68373cdaffc08198a0asdg39e96ef6d11043abf0eb2e6b9c6",
           "type" => "function_call",
           "status" => "completed",
-          "arguments" => "{\"query\":\"Ruby on Rails\"}",
-          "call_id" => "call_abc123",
-          "name" => "wikipedia_search"
+          "arguments" => "{\"url\":\"https://www.wsj.com\"}",
+          "call_id" => "call_MTzWbTQdadsg1i1oxb0v0kZgUF8",
+          "name" => "fetch_url"
         }])
+
+        expect(model_completion.response_tool_calls).to eq([{
+          "name" => "fetch_url",
+          "arguments" => { "url" => "https://www.wsj.com" }
+        }])
+      end
+    end
+
+    context "when using provider-managed tools" do
+      let(:response_body) do
+        json_file = File.read(Raif::Engine.root.join("spec/fixtures/llm_responses/open_ai_responses/provider_managed_web_search.json"))
+        JSON.parse(json_file)
+      end
+
+      before do
+        stubs.post("responses") do |env|
+          body = JSON.parse(env.body)
+          expect(body["tools"]).to eq([{ "type" => "web_search_preview" }])
+
+          [200, { "Content-Type" => "application/json" }, response_body]
+        end
+      end
+
+      it "extracts tool calls correctly" do
+        model_completion = llm.chat(
+          messages: [{ role: "user", content: "What are the latest developments in Ruby on Rails?" }],
+          available_model_tools: [Raif::ModelTools::ProviderManaged::WebSearch]
+        )
+
+        expect(model_completion.raw_response).to eq("Ruby on Rails has seen significant advancements in recent years, with the release of version 8.0 in November 2024 marking a pivotal moment in its evolution. ([zircon.tech](https://zircon.tech/blog/ruby-on-rails-8-0-a-new-era-of-independent-development/?utm_source=openai))\n\n**Key Developments in Ruby on Rails 8.0:**\n\n1. **Independent Deployment Capabilities:**\n   Rails 8.0 empowers individual developers to manage the entire application lifecycle, including deployment and management, without relying on Platform-as-a-Service (PaaS) providers. This shift provides greater control and flexibility over application infrastructure. ([zircon.tech](https://zircon.tech/blog/ruby-on-rails-8-0-a-new-era-of-independent-development/?utm_source=openai))\n\n2. **Reduced External Dependencies:**\n   The framework has minimized reliance on external libraries, integrating essential features directly into Rails. This approach enhances performance, stability, and security by reducing potential vulnerabilities associated with third-party updates. ([21twelveinteractive.com](https://www.21twelveinteractive.com/latest-features-and-updates-with-rails-8-0/?utm_source=openai))\n\n3. **Enhanced Background Processing and Caching:**\n   Rails 8.0 introduces improvements to background job processing and caching systems, optimizing concurrency and resource management. These enhancements lead to more efficient handling of tasks like email processing and data imports, resulting in faster and more scalable applications. ([21twelveinteractive.com](https://www.21twelveinteractive.com/latest-features-and-updates-with-rails-8-0/?utm_source=openai))\n\n4. **Integrated Push Notifications Framework:**\n   A built-in push notifications system allows developers to send real-time updates to users without the need for third-party services. This feature simplifies the implementation of live updates and interactive features, enhancing user engagement. ([21twelveinteractive.com](https://www.21twelveinteractive.com/latest-features-and-updates-with-rails-8-0/?utm_source=openai))\n\n5. **Improved Front-End Integration:**\n   Rails 8.0 continues to support modern front-end technologies, including Hotwire, which comprises Turbo and Stimulus. These tools enable the development of interactive, real-time web applications with minimal JavaScript, streamlining the development process and improving user experience. ([thefinanceinsiders.com](https://thefinanceinsiders.com/ruby-on-rails-in-2025-a-look-at-the-future-of-full-stack-development/?utm_source=openai))\n\n6. **Asynchronous Query Loading:**\n   The introduction of asynchronous querying through Active Record allows multiple database queries to run in parallel. This feature significantly reduces response times, making Rails applications more efficient, especially for data-intensive tasks. ([hyscaler.com](https://hyscaler.com/insights/updates-in-ruby-on-rails-7/?utm_source=openai))\n\n7. **Enhanced Security Measures:**\n   Rails 8.0 includes improved protection against common web vulnerabilities, such as enhanced CSRF protection and better handling of sensitive data. The framework now provides more secure defaults and clearer guidance on security best practices. ([zircon.tech](https://zircon.tech/blog/ruby-on-rails-8-0-a-new-era-of-independent-development/?utm_source=openai))\n\nThese developments reflect Rails' commitment to evolving with the demands of modern web development, offering developers powerful tools to build efficient, secure, and scalable applications.") # rubocop:disable Layout/LineLength
+        expect(model_completion.available_model_tools).to eq(["Raif::ModelTools::ProviderManaged::WebSearch"])
+        expect(model_completion.response_array.map{|v| v["type"] }).to eq(["web_search_call", "message"])
       end
     end
 

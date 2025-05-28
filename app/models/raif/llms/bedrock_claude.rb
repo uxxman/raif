@@ -2,6 +2,7 @@
 
 class Raif::Llms::BedrockClaude < Raif::Llm
   include Raif::Concerns::Llms::BedrockClaude::MessageFormatting
+  include Raif::Concerns::Llms::BedrockClaude::ToolFormatting
 
   def perform_model_completion!(model_completion)
     if Raif.config.aws_bedrock_model_name_prefix.present?
@@ -18,6 +19,7 @@ class Raif::Llms::BedrockClaude < Raif::Llm
     end
 
     model_completion.response_array = resp.output.message.content
+    model_completion.response_tool_calls = extract_response_tool_calls(resp)
     model_completion.completion_tokens = resp.usage.output_tokens
     model_completion.prompt_tokens = resp.usage.input_tokens
     model_completion.total_tokens = resp.usage.total_tokens

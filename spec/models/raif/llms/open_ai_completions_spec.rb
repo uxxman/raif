@@ -182,6 +182,77 @@ RSpec.describe Raif::Llms::OpenAiCompletions, type: :model do
       end
     end
 
+    context "when using developer-managed tools" do
+      let(:response_body) do
+        json_file = File.read(Raif::Engine.root.join("spec/fixtures/llm_responses/open_ai_completions/developer_managed_fetch_url.json"))
+        JSON.parse(json_file)
+      end
+
+      before do
+        stubs.post("chat/completions") do |env|
+          body = JSON.parse(env.body)
+
+          expect(body["tools"]).to eq([{
+            "type" => "function",
+            "function" => {
+              "name" => "fetch_url",
+              "description" => "Fetch a URL and return the page content as markdown",
+              "parameters" => {
+                "type" => "object",
+                "additionalProperties" => false,
+                "properties" => { "url" => { "type" => "string", "description" => "The URL to fetch content from" } },
+                "required" => ["url"]
+              }
+            }
+          }])
+
+          [200, { "Content-Type" => "application/json" }, response_body]
+        end
+      end
+
+      it "extracts tool calls correctly" do
+        model_completion = llm.chat(
+          messages: [{ role: "user", content: "What's on the homepage of https://www.wsj.com today?" }],
+          available_model_tools: [Raif::ModelTools::FetchUrl]
+        )
+
+        expect(model_completion.raw_response).to eq(nil)
+        expect(model_completion.available_model_tools).to eq(["Raif::ModelTools::FetchUrl"])
+        expect(model_completion.response_array).to eq([{
+          "index" => 0,
+          "message" => {
+            "role" => "assistant",
+            "content" => nil,
+            "tool_calls" => [{
+              "id" => "call_RNzLf3fE3dsfjh98mRsQYMvmSB",
+              "type" => "function",
+              "function" => { "name" => "fetch_url", "arguments" => "{\"url\":\"https://www.wsj.com\"}" }
+            }],
+            "refusal" => nil,
+            "annotations" => []
+          },
+          "logprobs" => nil,
+          "finish_reason" => "tool_calls"
+        }])
+
+        expect(model_completion.response_tool_calls).to eq([{
+          "name" => "fetch_url",
+          "arguments" => { "url" => "https://www.wsj.com" }
+        }])
+      end
+    end
+
+    context "when using provider-managed tools" do
+      it "raises Raif::Errors::UnsupportedFeatureError" do
+        expect do
+          llm.chat(
+            messages: [{ role: "user", content: "What are the latest developments in Ruby on Rails?" }],
+            available_model_tools: [Raif::ModelTools::ProviderManaged::WebSearch]
+          )
+        end.to raise_error(Raif::Errors::UnsupportedFeatureError)
+      end
+    end
+
     context "when the API returns a 400-level error" do
       let(:error_response_body) do
         <<~JSON
