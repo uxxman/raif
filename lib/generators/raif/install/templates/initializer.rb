@@ -10,19 +10,13 @@ Raif.configure do |config|
   # Whether OpenAI embedding models are enabled.
   # config.open_ai_embedding_models_enabled = ENV["OPENAI_API_KEY"].present?
 
-  # Your Anthropic API key. Defaults to ENV["ANTHROPIC_API_KEY"]
-  # config.anthropic_api_key = ENV["ANTHROPIC_API_KEY"]
-
-  # Whether Anthropic models are enabled.
-  # config.anthropic_models_enabled = ENV["ANTHROPIC_API_KEY"].present?
-
   # Whether models via AWS Bedrock are enabled. Defaults to false
   # config.bedrock_models_enabled = false
 
   # The AWS Bedrock region to use. Defaults to "us-east-1"
   # config.aws_bedrock_region = "us-east-1"
 
-  # Prefix to apply to the model name in AWS Bedrock API calls (e.g. us.anthropic.claude-3-5-haiku-20241022-v1:0)
+  # Prefix to apply to the model name in AWS Bedrock API calls
   # config.bedrock_model_name_prefix = "us"
 
   # Whether Titan embedding models are enabled. Defaults to false
@@ -36,10 +30,6 @@ Raif.configure do |config|
   #   open_ai_gpt_4o_mini
   #   open_ai_gpt_4o
   #   open_ai_gpt_3_5_turbo
-  #   anthropic_claude_3_7_sonnet
-  #   anthropic_claude_3_5_sonnet
-  #   anthropic_claude_3_5_haiku
-  #   anthropic_claude_3_opus
   #   bedrock_claude_3_5_sonnet
   #   bedrock_claude_3_7_sonnet
   #   bedrock_claude_3_5_haiku

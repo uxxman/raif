@@ -6,14 +6,13 @@
 [![Documentation](https://img.shields.io/badge/docs-YARD-blue.svg)](https://cultivatelabs.github.io/raif/)
 
 
-Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered features to your Rails apps, such as [tasks](#tasks), [conversations](#conversations), and [agents](#agents).  It supports for multiple LLM providers including [OpenAI](#openai), [Anthropic Claude](#anthropic-claude), and [AWS Bedrock](#aws-bedrock).
+Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered features to your Rails apps, such as [tasks](#tasks), [conversations](#conversations), and [agents](#agents).  It supports for multiple LLM providers including [OpenAI](#openai) and [AWS Bedrock](#aws-bedrock).
 
 Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to power [ARC](https://www.arcanalysis.ai), an AI-powered research & analysis platform.
 
 ## Table of Contents
 - [Setup](#setup)
   - [OpenAI](#openai)
-  - [Anthropic Claude](#anthropic-claude)
   - [AWS Bedrock (Claude)](#aws-bedrock-claude)
 - [Chatting with the LLM](#chatting-with-the-llm)
 - [Key Raif Concepts](#key-raif-concepts)
@@ -58,7 +57,7 @@ This will:
 - Copy Raif's database migrations to your application
 - Mount Raif's engine at `/raif` in your application's `config/routes.rb` file
 
-You must configure at least one API key for your LLM provider ([OpenAI](#openai), [Anthropic Claude](#anthropic-claude), [AWS Bedrock](#aws-bedrock-claude)). By default, the initializer will load them from environment variables (e.g. `ENV["OPENAI_API_KEY"]`, `ENV["ANTHROPIC_API_KEY"]`). Alternatively, you can set them directly in `config/initializers/raif.rb`.
+You must configure at least one API key for your LLM provider ([OpenAI](#openai), [AWS Bedrock](#aws-bedrock-claude)). By default, the initializer will load them from environment variables (e.g. `ENV["OPENAI_API_KEY"]`). Alternatively, you can set them directly in `config/initializers/raif.rb`.
 
 Run the migrations. Raif is compatible with both PostgreSQL and MySQL databases.
 ```bash
@@ -95,25 +94,10 @@ Currently supported OpenAI models:
 - `open_ai_gpt_4o`
 - `open_ai_gpt_3_5_turbo`
 
-## Anthropic Claude
-```ruby
-Raif.configure do |config|
-  config.anthropic_models_enabled = true
-  config.anthropic_api_key = ENV["ANTHROPIC_API_KEY"]
-  config.default_llm_model_key = "anthropic_claude_3_5_sonnet"
-end
-```
-
-Currently supported Anthropic models:
-- `anthropic_claude_3_7_sonnet`
-- `anthropic_claude_3_5_sonnet`
-- `anthropic_claude_3_5_haiku`
-- `anthropic_claude_3_opus`
-
 ## AWS Bedrock (Claude)
 ```ruby
 Raif.configure do |config|
-  config.anthropic_bedrock_models_enabled = true
+  config.bedrock_models_enabled = true
   config.aws_bedrock_region = "us-east-1"
   config.default_llm_model_key = "bedrock_nova_pro"
 end

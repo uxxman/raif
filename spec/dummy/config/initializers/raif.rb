@@ -4,9 +4,6 @@ Raif.configure do |config|
   # config.conversations_controller = "ConversationsController"
   # config.conversation_entries_controller = "ConversationEntriesController"
 
-  config.anthropic_api_key = "placeholder"
-  config.anthropic_models_enabled = true
-
   config.open_ai_api_key = "placeholder"
   config.open_ai_models_enabled = true
   config.open_ai_embedding_models_enabled = true

@@ -46,18 +46,12 @@ en:
       vi: Vietnamese
       zh: Chinese
     model_names:
-      anthropic_claude_3_5_haiku: Anthropic Claude 3.5 Haiku
-      anthropic_claude_3_5_sonnet: Anthropic Claude 3.5 Sonnet
-      anthropic_claude_3_7_sonnet: Anthropic Claude 3.7 Sonnet
-      anthropic_claude_3_opus: Anthropic Claude 3 Opus
-      anthropic_claude_4_opus: Anthropic Claude 4 Opus
-      anthropic_claude_4_sonnet: Anthropic Claude 4 Sonnet
-      bedrock_claude_3_5_haiku: Anthropic Claude 3.5 Haiku (via AWS Bedrock)
-      bedrock_claude_3_5_sonnet: Anthropic Claude 3.5 Sonnet (via AWS Bedrock)
-      bedrock_claude_3_7_sonnet: Anthropic Claude 3.7 Sonnet (via AWS Bedrock)
-      bedrock_claude_3_opus: Anthropic Claude 3 Opus (via AWS Bedrock)
-      bedrock_claude_4_opus: Anthropic Claude 4 Opus (via AWS Bedrock)
-      bedrock_claude_4_sonnet: Anthropic Claude 4 Sonnet (via AWS Bedrock)
+      bedrock_claude_3_5_haiku: Claude 3.5 Haiku (via AWS Bedrock)
+      bedrock_claude_3_5_sonnet: Claude 3.5 Sonnet (via AWS Bedrock)
+      bedrock_claude_3_7_sonnet: Claude 3.7 Sonnet (via AWS Bedrock)
+      bedrock_claude_3_opus: Claude 3 Opus (via AWS Bedrock)
+      bedrock_claude_4_opus: Claude 4 Opus (via AWS Bedrock)
+      bedrock_claude_4_sonnet: Claude 4 Sonnet (via AWS Bedrock)
       bedrock_nova_pro: Amazon Nova Pro (via AWS Bedrock)
       open_ai_gpt_3_5_turbo: OpenAI GPT-3.5 Turbo
       open_ai_gpt_4_1: OpenAI GPT-4.1

@@ -43,14 +43,6 @@ module Raif
     end
 
     config.after_initialize do
-      next unless Raif.config.anthropic_models_enabled
-
-      Raif.default_llms[Raif::Llms::Anthropic].each do |llm_config|
-        Raif.register_llm(Raif::Llms::Anthropic, **llm_config)
-      end
-    end
-
-    config.after_initialize do
       next unless Raif.config.bedrock_models_enabled
 
       require "aws-sdk-bedrockruntime"

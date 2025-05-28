@@ -3,9 +3,7 @@
 module Raif
   class Configuration
     attr_accessor :agent_types,
-      :anthropic_api_key,
       :bedrock_models_enabled,
-      :anthropic_models_enabled,
       :authorize_admin_controller_action,
       :authorize_controller_action,
       :bedrock_model_name_prefix,
@@ -31,9 +29,7 @@ module Raif
     def initialize
       # Set default config
       @agent_types = Set.new(["Raif::Agents::ReActAgent", "Raif::Agents::NativeToolCallingAgent"])
-      @anthropic_api_key = ENV["ANTHROPIC_API_KEY"]
       @bedrock_models_enabled = false
-      @anthropic_models_enabled = ENV["ANTHROPIC_API_KEY"].present?
       @authorize_admin_controller_action = ->{ false }
       @authorize_controller_action = ->{ false }
       @aws_bedrock_region = "us-east-1"
@@ -66,7 +62,7 @@ module Raif
         puts <<~EOS
 
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          No LLMs are enabled in Raif. Make sure you have an API key configured for at least one LLM provider. You can do this by setting an API key in your environment variables or in config/initializers/raif.rb (e.g. ENV["OPENAI_API_KEY"], ENV["ANTHROPIC_API_KEY"]).
+          No LLMs are enabled in Raif. Make sure you have an API key configured for at least one LLM provider. You can do this by setting an API key in your environment variables or in config/initializers/raif.rb (e.g. ENV["OPENAI_API_KEY"]).
 
           See the README for more information: https://github.com/CultivateLabs/raif#setup
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -108,11 +104,6 @@ module Raif
       if open_ai_embedding_models_enabled && open_ai_api_key.blank?
         raise Raif::Errors::InvalidConfigError,
           "Raif.config.open_ai_api_key is required when Raif.config.open_ai_embedding_models_enabled is true. Set it via Raif.config.open_ai_api_key or ENV[\"OPENAI_API_KEY\"]" # rubocop:disable Layout/LineLength
-      end
-
-      if anthropic_models_enabled && anthropic_api_key.blank?
-        raise Raif::Errors::InvalidConfigError,
-          "Raif.config.anthropic_api_key is required when Raif.config.anthropic_models_enabled is true. Set it via Raif.config.anthropic_api_key or ENV['ANTHROPIC_API_KEY']" # rubocop:disable Layout/LineLength
       end
     end
 
