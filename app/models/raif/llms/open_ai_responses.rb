@@ -92,4 +92,23 @@ private
     parameters
   end
 
+  def determine_response_format(model_completion)
+    # Only configure response format for JSON outputs
+    return unless model_completion.response_format_json?
+
+    if model_completion.json_response_schema.present? && supports_structured_outputs?
+      validate_json_schema!(model_completion.json_response_schema)
+
+      {
+        type: "json_schema",
+        name: "json_response_schema",
+        strict: true,
+        schema: model_completion.json_response_schema
+      }
+    else
+      # Default JSON mode for OpenAI models that don't support structured outputs or no schema is provided
+      { type: "json_object" }
+    end
+  end
+
 end
