@@ -23,6 +23,7 @@ Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to 
     - [Conversation Types](#conversation-types)
   - [Agents](#agents)
   - [Model Tools](#model-tools)
+    - [Provider-Managed Tools](#provider-managed-tools)
 - [Images/Files/PDF's](#imagesfilespdfs)
   - [Images/Files/PDF's in Tasks](#imagesfilespdfs-in-tasks)
 - [Embedding Models](#embedding-models)
@@ -84,6 +85,10 @@ end
 Configure your LLM providers. You'll need at least one of:
 
 ## OpenAI
+
+Raif supports both OpenAI's Completions API and the newer Responses API, which provides access to provider-managed tools like web search, code execution, and image generation.
+
+### OpenAI Completions API
 ```ruby
 Raif.configure do |config|
   config.open_ai_models_enabled = true
@@ -92,10 +97,37 @@ Raif.configure do |config|
 end
 ```
 
-Currently supported OpenAI models:
+Currently supported OpenAI Completions API models:
 - `open_ai_gpt_4o_mini`
 - `open_ai_gpt_4o`
 - `open_ai_gpt_3_5_turbo`
+- `open_ai_gpt_4_1`
+- `open_ai_gpt_4_1_mini`
+- `open_ai_gpt_4_1_nano`
+
+### OpenAI Responses API (with Provider-Managed Tools)
+```ruby
+Raif.configure do |config|
+  config.open_ai_responses_models_enabled = true
+  config.open_ai_api_key = ENV["OPENAI_API_KEY"]
+  config.default_llm_model_key = "open_ai_responses_gpt_4o"
+end
+```
+
+Currently supported OpenAI Responses API models:
+- `open_ai_responses_gpt_4o_mini`
+- `open_ai_responses_gpt_4o`
+- `open_ai_responses_gpt_3_5_turbo`
+- `open_ai_responses_gpt_4_1`
+- `open_ai_responses_gpt_4_1_mini`
+- `open_ai_responses_gpt_4_1_nano`
+
+The Responses API provides access to provider-managed tools including:
+- **Web Search**: Real-time web search capabilities
+- **Code Execution**: Python code execution in a sandboxed environment  
+- **Image Generation**: AI-powered image creation
+
+Note: Provider-managed tools are automatically available when using OpenAI Responses API models and don't require additional configuration.
 
 ## Anthropic Claude
 ```ruby
@@ -522,7 +554,54 @@ class Raif::ModelTools::GoogleSearch < Raif::ModelTool
 end
 ```
 
-## Images/Files/PDF's
+### Provider-Managed Tools
+
+In addition to the ability to create your own model tools, Raif supports provider-managed tools. These are tools that are built into certain LLM providers and run on the provider's infrastructure:
+
+- **`Raif::ModelTools::ProviderManaged::WebSearch`**: Performs real-time web searches and returns relevant results
+- **`Raif::ModelTools::ProviderManaged::CodeExecution`**: Executes code in a secure sandboxed environment (e.g. Python)
+- **`Raif::ModelTools::ProviderManaged::ImageGeneration`**: Generates images based on text descriptions
+
+Current provider-managed tool support:
+| Provider | WebSearch | CodeExecution | ImageGeneration |
+|----------|-----------|---------------|-----------------|
+| OpenAI Responses API | ✅ | ✅ | ✅ |
+| OpenAI Completions API | ❌ | ❌ | ❌ |
+| Anthropic Claude | ✅ | ✅ | ❌ |
+| AWS Bedrock (Claude) | ❌ | ❌ | ❌ |
+| OpenRouter | ❌ | ❌ | ❌ |
+
+To use provider-managed tools, include them in the `available_model_tools` array:
+
+```ruby
+# In a conversation
+conversation = Raif::Conversation.create!(
+  creator: current_user,
+  available_model_tools: [
+    "Raif::ModelTools::ProviderManaged::WebSearch",
+    "Raif::ModelTools::ProviderManaged::CodeExecution"
+  ]
+)
+
+# In an agent
+agent = Raif::Agents::ReActAgent.new(
+  task: "Search for recent news about AI and create a summary chart",
+  available_model_tools: [
+    "Raif::ModelTools::ProviderManaged::WebSearch",
+    "Raif::ModelTools::ProviderManaged::CodeExecution"
+  ],
+  creator: current_user
+)
+
+# Directly in a chat
+llm = Raif.llm(:open_ai_responses_gpt_4_1)
+model_completion = llm.chat(
+  messages: [{ role: "user", content: "What are the latest developments in Ruby on Rails?" }], 
+  available_model_tools: [Raif::ModelTools::ProviderManaged::WebSearch]
+)
+```
+
+## Sending Images/Files/PDF's to the LLM
 
 Raif supports images, files, and PDF's in the messages sent to the LLM.
 
