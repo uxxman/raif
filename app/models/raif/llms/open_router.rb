@@ -2,6 +2,8 @@
 
 class Raif::Llms::OpenRouter < Raif::Llm
   include Raif::Concerns::Llms::OpenAiCompletions::MessageFormatting
+  include Raif::Concerns::Llms::OpenAiCompletions::ToolFormatting
+  include Raif::Concerns::Llms::OpenAi::JsonSchemaValidation
 
   def perform_model_completion!(model_completion)
     model_completion.temperature ||= default_temperature
@@ -51,44 +53,22 @@ protected
       params[:messages].unshift({ "role" => "system", "content" => model_completion.system_prompt })
     end
 
-    if model_completion.available_model_tools.any?
-      tools = []
-
-      model_completion.available_model_tools_map.each do |_tool_name, tool|
-        tools << {
-          type: "function",
-          function: {
-            name: tool.tool_name,
-            description: tool.tool_description,
-            parameters: tool.tool_arguments_schema
-          }
-        }
-      end
-
-      params[:tools] = tools
+    if supports_native_tool_use?
+      tools = build_tools_parameter(model_completion)
+      params[:tools] = tools unless tools.blank?
     end
 
     params
   end
 
-  def extract_response_tool_calls(response_json)
-    tool_calls = response_json.dig("choices", 0, "message", "tool_calls")
-    return [] unless tool_calls.is_a?(Array)
+  def extract_response_tool_calls(resp)
+    return if resp.dig("choices", 0, "message", "tool_calls").blank?
 
-    tool_calls.map do |tool_call|
-      next unless tool_call["type"] == "function"
-
-      function = tool_call["function"]
-      next unless function.is_a?(Hash)
-
+    resp.dig("choices", 0, "message", "tool_calls").map do |tool_call|
       {
-        "id" => tool_call["id"],
-        "type" => "function",
-        "function" => {
-          "name" => function["name"],
-          "arguments" => function["arguments"]
-        }
+        "name" => tool_call["function"]["name"],
+        "arguments" => JSON.parse(tool_call["function"]["arguments"])
       }
-    end.compact
+    end
   end
 end
