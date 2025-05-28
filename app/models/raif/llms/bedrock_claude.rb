@@ -45,8 +45,10 @@ protected
 
     params[:system] = [{ text: model_completion.system_prompt }] if model_completion.system_prompt.present?
 
-    tool_config = build_tool_parameters(model_completion)
-    params[:tool_config] = tool_config if tool_config.present?
+    if supports_native_tool_use?
+      tools = build_tools_parameter(model_completion)
+      params[:tool_config] = tools unless tools.blank?
+    end
 
     params
   end
@@ -64,36 +66,6 @@ protected
         content[type_key][:source][:bytes] = Base64.strict_decode64(base64_data)
       end
     end
-  end
-
-  def build_tool_parameters(model_completion)
-    tools = []
-
-    # If we're looking for a JSON response, add a tool to the request that the model can use to provide a JSON response
-    if model_completion.response_format_json? && model_completion.json_response_schema.present?
-      tools << {
-        name: "json_response",
-        description: "Generate a structured JSON response based on the provided schema.",
-        input_schema: { json: model_completion.json_response_schema }
-      }
-    end
-
-    # If we support native tool use and have tools available, add them to the request
-    if supports_native_tool_use? && model_completion.available_model_tools.any?
-      model_completion.available_model_tools_map.each do |_tool_name, tool|
-        tools << {
-          name: tool.tool_name,
-          description: tool.tool_description,
-          input_schema: { json: tool.tool_arguments_schema }
-        }
-      end
-    end
-
-    return if tools.blank?
-
-    {
-      tools: tools.map{|tool| { tool_spec: tool } }
-    }
   end
 
   def extract_text_response(resp)

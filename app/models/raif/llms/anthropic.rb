@@ -2,6 +2,7 @@
 
 class Raif::Llms::Anthropic < Raif::Llm
   include Raif::Concerns::Llms::Anthropic::MessageFormatting
+  include Raif::Concerns::Llms::Anthropic::ToolFormatting
 
   def perform_model_completion!(model_completion)
     params = build_request_parameters(model_completion)
@@ -49,30 +50,10 @@ protected
 
     params[:system] = model_completion.system_prompt if model_completion.system_prompt.present?
 
-    # Add tools to the request if needed
-    tools = []
-
-    # If we're looking for a JSON response, add a tool to the request that the model can use to provide a JSON response
-    if model_completion.response_format_json? && model_completion.json_response_schema.present?
-      tools << {
-        name: "json_response",
-        description: "Generate a structured JSON response based on the provided schema.",
-        input_schema: model_completion.json_response_schema
-      }
+    if supports_native_tool_use?
+      tools = build_tools_parameter(model_completion)
+      params[:tools] = tools unless tools.blank?
     end
-
-    # If we support native tool use and have tools available, add them to the request
-    if supports_native_tool_use? && model_completion.available_model_tools.any?
-      model_completion.available_model_tools_map.each do |_tool_name, tool|
-        tools << {
-          name: tool.tool_name,
-          description: tool.tool_description,
-          input_schema: tool.tool_arguments_schema
-        }
-      end
-    end
-
-    params[:tools] = tools if tools.any?
 
     params
   end

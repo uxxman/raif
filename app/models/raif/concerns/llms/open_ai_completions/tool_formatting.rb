@@ -3,7 +3,7 @@
 module Raif::Concerns::Llms::OpenAiCompletions::ToolFormatting
   extend ActiveSupport::Concern
 
-  def build_tools_array(model_completion)
+  def build_tools_parameter(model_completion)
     model_completion.available_model_tools_map.map do |_tool_name, tool|
       if tool.provider_managed?
         raise Raif::Errors::UnsupportedFeatureError,

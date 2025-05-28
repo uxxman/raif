@@ -78,8 +78,9 @@ private
     end
 
     # If the LLM supports native tool use and there are available tools, add them to the parameters
-    if supports_native_tool_use? && model_completion.available_model_tools.any?
-      parameters[:tools] = build_tools_array(model_completion)
+    if supports_native_tool_use?
+      tools = build_tools_parameter(model_completion)
+      parameters[:tools] = tools unless tools.blank?
     end
 
     # Add response format if needed. Default will be { "type": "text" }
