@@ -427,17 +427,15 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
           expect(parameters[:text]).to eq({
             format: {
               type: "json_schema",
-              json_schema: {
-                name: "json_response_schema",
-                strict: true,
-                schema: {
-                  type: "object",
-                  additionalProperties: false,
-                  required: ["joke", "answer"],
-                  properties: {
-                    joke: { type: "string" },
-                    answer: { type: "string" }
-                  }
+              name: "json_response_schema",
+              strict: true,
+              schema: {
+                type: "object",
+                additionalProperties: false,
+                required: ["joke", "answer"],
+                properties: {
+                  joke: { type: "string" },
+                  answer: { type: "string" }
                 }
               }
             }
@@ -691,11 +689,9 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
         result = llm.send(:determine_response_format, model_completion)
         expect(result).to eq({
           type: "json_schema",
-          json_schema: {
-            name: "json_response_schema",
-            strict: true,
-            schema: schema
-          }
+          name: "json_response_schema",
+          strict: true,
+          schema: schema
         })
       end
     end

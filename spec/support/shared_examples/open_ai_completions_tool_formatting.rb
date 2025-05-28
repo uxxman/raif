@@ -15,7 +15,6 @@ RSpec.shared_examples "an LLM that uses OpenAI's Completions API tool formatting
       let(:available_model_tools) { [] }
 
       it "returns an empty array" do
-        puts "RUNNING TEHSE"
         result = llm.send(:build_tools_parameter, model_completion)
         expect(result).to eq([])
       end
