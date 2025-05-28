@@ -598,7 +598,7 @@ Raif supports generation of vector embeddings. You can enable and configure embe
 ```ruby
 Raif.configure do |config|
   config.open_ai_embedding_models_enabled = true
-  config.aws_bedrock_titan_embedding_models_enabled = true
+  config.bedrock_titan_embedding_models_enabled = true
   
   config.default_embedding_model_key = "open_ai_text_embedding_3_small"
 end
