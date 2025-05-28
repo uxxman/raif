@@ -48,6 +48,12 @@ Raif.configure do |config|
   #   open_ai_gpt_4o_mini
   #   open_ai_gpt_4o
   #   open_ai_gpt_3_5_turbo
+  #   open_ai_responses_gpt_4_1
+  #   open_ai_responses_gpt_4_1_mini
+  #   open_ai_responses_gpt_4_1_nano
+  #   open_ai_responses_gpt_4o_mini
+  #   open_ai_responses_gpt_4o
+  #   open_ai_gpt_3_5_turbo
   #   anthropic_claude_3_7_sonnet
   #   anthropic_claude_3_5_sonnet
   #   anthropic_claude_3_5_haiku

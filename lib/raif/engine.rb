@@ -29,8 +29,12 @@ module Raif
     config.after_initialize do
       next unless Raif.config.open_ai_models_enabled
 
-      Raif.default_llms[Raif::Llms::OpenAi].each do |llm_config|
-        Raif.register_llm(Raif::Llms::OpenAi, **llm_config)
+      Raif.default_llms[Raif::Llms::OpenAiCompletions].each do |llm_config|
+        Raif.register_llm(Raif::Llms::OpenAiCompletions, **llm_config)
+      end
+
+      Raif.default_llms[Raif::Llms::OpenAiResponses].each do |llm_config|
+        Raif.register_llm(Raif::Llms::OpenAiResponses, **llm_config)
       end
     end
 
