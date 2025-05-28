@@ -11,9 +11,6 @@ Raif.configure do |config|
   config.open_ai_models_enabled = true
   config.open_ai_embedding_models_enabled = true
 
-  config.open_router_api_key = "placeholder"
-  config.open_router_models_enabled = true
-
   config.bedrock_embedding_models_enabled = true
   config.bedrock_models_enabled = true
 

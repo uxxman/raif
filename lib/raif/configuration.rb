@@ -25,10 +25,6 @@ module Raif
       :open_ai_api_key,
       :open_ai_embedding_models_enabled,
       :open_ai_models_enabled,
-      :open_router_api_key,
-      :open_router_models_enabled,
-      :open_router_app_name,
-      :open_router_site_url,
       :task_system_prompt_intro,
       :user_tool_types
 
@@ -62,10 +58,6 @@ module Raif
       @open_ai_api_key = ENV["OPENAI_API_KEY"]
       @open_ai_embedding_models_enabled = ENV["OPENAI_API_KEY"].present?
       @open_ai_models_enabled = ENV["OPENAI_API_KEY"].present?
-      @open_router_api_key = ENV["OPENROUTER_API_KEY"]
-      @open_router_models_enabled = ENV["OPENROUTER_API_KEY"].present?
-      @open_router_app_name = nil
-      @open_router_site_url = nil
       @user_tool_types = []
     end
 
@@ -74,7 +66,7 @@ module Raif
         puts <<~EOS
 
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          No LLMs are enabled in Raif. Make sure you have an API key configured for at least one LLM provider. You can do this by setting an API key in your environment variables or in config/initializers/raif.rb (e.g. ENV["OPENAI_API_KEY"], ENV["ANTHROPIC_API_KEY"], ENV["OPENROUTER_API_KEY"]).
+          No LLMs are enabled in Raif. Make sure you have an API key configured for at least one LLM provider. You can do this by setting an API key in your environment variables or in config/initializers/raif.rb (e.g. ENV["OPENAI_API_KEY"], ENV["ANTHROPIC_API_KEY"]).
 
           See the README for more information: https://github.com/CultivateLabs/raif#setup
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -89,7 +81,7 @@ module Raif
           "Raif.config.default_llm_model_key was set to #{default_llm_model_key}, but must be one of: #{Raif.available_llm_keys.join(", ")}"
       end
 
-      unless Raif.available_embedding_model_keys.include?(default_embedding_model_key.to_sym)
+      if Raif.embedding_model_registry.present? && Raif.available_embedding_model_keys.exclude?(default_embedding_model_key.to_sym)
         raise Raif::Errors::InvalidConfigError,
           "Raif.config.default_embedding_model_key was set to #{default_embedding_model_key}, but must be one of: #{Raif.available_embedding_model_keys.join(", ")}" # rubocop:disable Layout/LineLength
       end
@@ -121,11 +113,6 @@ module Raif
       if anthropic_models_enabled && anthropic_api_key.blank?
         raise Raif::Errors::InvalidConfigError,
           "Raif.config.anthropic_api_key is required when Raif.config.anthropic_models_enabled is true. Set it via Raif.config.anthropic_api_key or ENV['ANTHROPIC_API_KEY']" # rubocop:disable Layout/LineLength
-      end
-
-      if open_router_models_enabled && open_router_api_key.blank?
-        raise Raif::Errors::InvalidConfigError,
-          "Raif.config.open_router_api_key is required when Raif.config.open_router_models_enabled is true. Set it via Raif.config.open_router_api_key or ENV['OPENROUTER_API_KEY']" # rubocop:disable Layout/LineLength
       end
     end
 
