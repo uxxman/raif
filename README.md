@@ -13,6 +13,8 @@ Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to 
 ## Table of Contents
 - [Setup](#setup)
   - [OpenAI](#openai)
+    - [OpenAI Completions API](#openai-completions-api)
+    - [OpenAI Responses API](#openai-responses-api)
   - [Anthropic Claude](#anthropic-claude)
   - [AWS Bedrock (Claude)](#aws-bedrock-claude)
   - [OpenRouter](#openrouter)
@@ -105,7 +107,7 @@ Currently supported OpenAI Completions API models:
 - `open_ai_gpt_4_1_mini`
 - `open_ai_gpt_4_1_nano`
 
-### OpenAI Responses API (with Provider-Managed Tools)
+### OpenAI Responses API
 ```ruby
 Raif.configure do |config|
   config.open_ai_responses_models_enabled = true
@@ -122,12 +124,7 @@ Currently supported OpenAI Responses API models:
 - `open_ai_responses_gpt_4_1_mini`
 - `open_ai_responses_gpt_4_1_nano`
 
-The Responses API provides access to provider-managed tools including:
-- **Web Search**: Real-time web search capabilities
-- **Code Execution**: Python code execution in a sandboxed environment  
-- **Image Generation**: AI-powered image creation
-
-Note: Provider-managed tools are automatically available when using OpenAI Responses API models and don't require additional configuration.
+The Responses API provides access to [provider-managed tools](#provider-managed-tools), including web search, code execution, and image generation.
 
 ## Anthropic Claude
 ```ruby
@@ -143,6 +140,8 @@ Currently supported Anthropic models:
 - `anthropic_claude_3_5_sonnet`
 - `anthropic_claude_3_5_haiku`
 - `anthropic_claude_3_opus`
+
+The Anthropic adapter provides access to [provider-managed tools](#provider-managed-tools) for web search and code execution.
 
 ## AWS Bedrock (Claude)
 ```ruby
