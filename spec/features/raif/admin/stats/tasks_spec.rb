@@ -27,8 +27,8 @@ RSpec.describe "Admin::Stats::Tasks", type: :feature do
     let!(:model_completion2) do
       FB.create(
         :raif_model_completion,
-        llm_model_key: "open_ai_gpt_4o",
-        model_api_name: "gpt-4o",
+        llm_model_key: "bedrock_claude_3_5_sonnet",
+        model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
         source: task2,
         prompt_tokens: 200,
         completion_tokens: 100,
@@ -41,8 +41,8 @@ RSpec.describe "Admin::Stats::Tasks", type: :feature do
     let!(:old_model_completion) do
       FB.create(
         :raif_model_completion,
-        llm_model_key: "open_ai_gpt_4o_mini",
-        model_api_name: "gpt-4o-mini",
+        llm_model_key: "bedrock_claude_3_5_sonnet",
+        model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
         source: old_task,
         prompt_tokens: 300,
         completion_tokens: 150,

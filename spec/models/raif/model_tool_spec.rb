@@ -25,10 +25,5 @@ RSpec.describe Raif::ModelTool, type: :model do
         }
       })
     end
-
-    it "validates against OpenAI's rules" do
-      llm = Raif.llm(:open_ai_gpt_4o_mini)
-      expect(llm.validate_json_schema!(Raif::TestModelTool.tool_arguments_schema)).to eq(true)
-    end
   end
 end

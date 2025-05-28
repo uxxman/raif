@@ -52,7 +52,7 @@ RSpec.describe "Admin::Tasks", type: :feature do
         prompt: "Test prompt",
         raw_response: "Test response",
         system_prompt: "You are a test assistant",
-        llm_model_key: "open_ai_gpt_4o_mini"
+        llm_model_key: "bedrock_claude_3_5_sonnet"
       )
     end
 
@@ -67,7 +67,6 @@ RSpec.describe "Admin::Tasks", type: :feature do
       expect(page).to have_content(task.id.to_s)
       expect(page).to have_content(task.creator_type)
       expect(page).to have_content(task.creator_id.to_s)
-      expect(page).to have_content("open_ai_gpt_4o_mini")
       expect(page).to have_content(task.response_format)
 
       # Check timestamps

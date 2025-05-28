@@ -41,45 +41,6 @@ module Raif
 
   def self.default_llms
     {
-      Raif::Llms::OpenAi => [
-        {
-          key: :open_ai_gpt_4o_mini,
-          api_name: "gpt-4o-mini",
-          input_token_cost: 0.15 / 1_000_000,
-          output_token_cost: 0.6 / 1_000_000,
-        },
-        {
-          key: :open_ai_gpt_4o,
-          api_name: "gpt-4o",
-          input_token_cost: 2.5 / 1_000_000,
-          output_token_cost: 10.0 / 1_000_000,
-        },
-        {
-          key: :open_ai_gpt_3_5_turbo,
-          api_name: "gpt-3.5-turbo",
-          input_token_cost: 0.5 / 1_000_000,
-          output_token_cost: 1.5 / 1_000_000,
-          model_provider_settings: { supports_structured_outputs: false }
-        },
-        {
-          key: :open_ai_gpt_4_1,
-          api_name: "gpt-4.1",
-          input_token_cost: 2.0 / 1_000_000,
-          output_token_cost: 8.0 / 1_000_000,
-        },
-        {
-          key: :open_ai_gpt_4_1_mini,
-          api_name: "gpt-4.1-mini",
-          input_token_cost: 0.4 / 1_000_000,
-          output_token_cost: 1.6 / 1_000_000,
-        },
-        {
-          key: :open_ai_gpt_4_1_nano,
-          api_name: "gpt-4.1-nano",
-          input_token_cost: 0.1 / 1_000_000,
-          output_token_cost: 0.4 / 1_000_000,
-        },
-      ],
       Raif::Llms::Bedrock => [
         {
           key: :bedrock_claude_4_sonnet,

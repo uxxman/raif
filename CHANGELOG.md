@@ -1,9 +1,7 @@
 ## v1.1.0
 
-- Added support for images and files/PDF's. [#106](https://github.com/CultivateLabs/raif/pull/106)
 - Added ability to generate embeddings. [#77](https://github.com/CultivateLabs/raif/pull/77)
 - Added a Stats section to the admin interface. [#90](https://github.com/CultivateLabs/raif/pull/90)
-- Each model provider's models will be enabled by default if their API key environment variable is present (e.g. OpenAI models will be enabled by default if `ENV["OPENAI_API_KEY"].present?`).
 - AWS Bedrock is now disabled by default. This ensures the `aws-sdk-bedrockruntime` gem is not required unless you use AWS Bedrock models. [#94](https://github.com/CultivateLabs/raif/pull/94)
 - Added `gpt-4.1`, `gpt-4.1-mini`, and `gpt-4.1-nano` models to the default list of supported LLMs. [#74](https://github.com/CultivateLabs/raif/pull/74)
 - Added `claude-4-sonnet` and `claude-4-opus` models to the default list of supported LLMs. [#119](https://github.com/CultivateLabs/raif/pull/119)

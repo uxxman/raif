@@ -50,26 +50,6 @@ module Raif
 
   def self.default_embedding_models
     {
-      Raif::EmbeddingModels::OpenAi => [
-        {
-          key: :open_ai_text_embedding_3_large,
-          api_name: "text-embedding-3-large",
-          input_token_cost: 0.13 / 1_000_000,
-          default_output_vector_size: 3072,
-        },
-        {
-          key: :open_ai_text_embedding_3_small,
-          api_name: "text-embedding-3-small",
-          input_token_cost: 0.02 / 1_000_000,
-          default_output_vector_size: 1536,
-        },
-        {
-          key: :open_ai_text_embedding_ada_002,
-          api_name: "text-embedding-ada-002",
-          input_token_cost: 0.01 / 1_000_000,
-          default_output_vector_size: 1536,
-        },
-      ],
       Raif::EmbeddingModels::Bedrock => [
         {
           key: :bedrock_titan_embed_text_v2,

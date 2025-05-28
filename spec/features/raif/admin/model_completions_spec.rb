@@ -23,16 +23,16 @@ RSpec.describe "Admin::ModelCompletions", type: :feature do
       [
         Raif::ModelCompletion.create!(
           source: agent,
-          llm_model_key: "open_ai_gpt_4o_mini",
-          model_api_name: "gpt-4o-mini",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           response_format: "text",
           raw_response: "Test response 1",
           total_tokens: 1000
         ),
         Raif::ModelCompletion.create!(
           source: conversation_entry,
-          llm_model_key: "open_ai_gpt_4o",
-          model_api_name: "gpt-4o",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           response_format: "text",
           raw_response: "Test response 2",
           total_tokens: 200
@@ -43,8 +43,8 @@ RSpec.describe "Admin::ModelCompletions", type: :feature do
     let!(:json_completion) do
       Raif::ModelCompletion.create!(
         source: task,
-        llm_model_key: "open_ai_gpt_4o",
-        model_api_name: "gpt-4o",
+        llm_model_key: "bedrock_claude_3_5_sonnet",
+        model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
         response_format: "json",
         raw_response: '{"key": "value"}',
         prompt_tokens: 50,
@@ -69,8 +69,8 @@ RSpec.describe "Admin::ModelCompletions", type: :feature do
     let!(:long_completion) do
       Raif::ModelCompletion.create!(
         source: task3,
-        llm_model_key: "open_ai_gpt_4o_mini",
-        model_api_name: "gpt-4o-mini",
+        llm_model_key: "bedrock_claude_3_5_sonnet",
+        model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
         response_format: "text",
         raw_response: "a" * 200,
         total_tokens: 300
@@ -97,8 +97,6 @@ RSpec.describe "Admin::ModelCompletions", type: :feature do
       expect(page).to have_content("html")
 
       # Check model names
-      expect(page).to have_content("open_ai_gpt_4o_mini")
-      expect(page).to have_content("open_ai_gpt_4o")
       expect(page).to have_content("bedrock_claude_3_5_sonnet")
 
       # Check token counts
@@ -120,8 +118,8 @@ RSpec.describe "Admin::ModelCompletions", type: :feature do
     let!(:text_completion) do
       Raif::ModelCompletion.create!(
         source: task,
-        llm_model_key: "open_ai_gpt_4o_mini",
-        model_api_name: "gpt-4o-mini",
+        llm_model_key: "bedrock_claude_3_5_sonnet",
+        model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
         response_format: "text",
         raw_response: "This is a test response",
         prompt_tokens: 2500,
@@ -143,8 +141,6 @@ RSpec.describe "Admin::ModelCompletions", type: :feature do
       expect(page).to have_content(text_completion.id.to_s)
       expect(page).to have_content(text_completion.source_type)
       expect(page).to have_content(text_completion.source_id.to_s)
-      expect(page).to have_content("open_ai_gpt_4o_mini")
-      expect(page).to have_content("text")
 
       # Check timestamps
       expect(page).to have_content(text_completion.created_at.rfc822)
@@ -175,8 +171,8 @@ RSpec.describe "Admin::ModelCompletions", type: :feature do
       let!(:json_completion) do
         Raif::ModelCompletion.create!(
           source: task,
-          llm_model_key: "open_ai_gpt_4o",
-          model_api_name: "gpt-4o",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           response_format: "json",
           raw_response: '{"key": "value", "nested": {"data": "test"}}',
           total_tokens: 150

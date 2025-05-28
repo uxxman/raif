@@ -24,7 +24,7 @@ RSpec.describe Raif::Agents::ReActAgent, type: :model do
         task: "What is the capital of France?",
         max_iterations: 3,
         available_model_tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl],
-        llm_model_key: "open_ai_gpt_4o"
+        llm_model_key: "bedrock_claude_3_5_sonnet"
       )
     end
 

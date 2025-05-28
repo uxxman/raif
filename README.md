@@ -6,14 +6,13 @@
 [![Documentation](https://img.shields.io/badge/docs-YARD-blue.svg)](https://cultivatelabs.github.io/raif/)
 
 
-Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered features to your Rails apps, such as [tasks](#tasks), [conversations](#conversations), and [agents](#agents).  It supports for multiple LLM providers including [OpenAI](#openai) and [AWS Bedrock](#aws-bedrock).
+Raif (Ruby AI Framework) is a Rails engine that helps you add AI-powered features to your Rails apps, such as [tasks](#tasks), [conversations](#conversations), and [agents](#agents).  It supports for multiple LLM providers via [AWS Bedrock](#aws-bedrock).
 
 Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to power [ARC](https://www.arcanalysis.ai), an AI-powered research & analysis platform.
 
 ## Table of Contents
 - [Setup](#setup)
-  - [OpenAI](#openai)
-  - [AWS Bedrock (Claude)](#aws-bedrock-claude)
+  - [AWS Bedrock](#aws-bedrock)
 - [Chatting with the LLM](#chatting-with-the-llm)
 - [Key Raif Concepts](#key-raif-concepts)
   - [Tasks](#tasks)
@@ -57,8 +56,6 @@ This will:
 - Copy Raif's database migrations to your application
 - Mount Raif's engine at `/raif` in your application's `config/routes.rb` file
 
-You must configure at least one API key for your LLM provider ([OpenAI](#openai), [AWS Bedrock](#aws-bedrock-claude)). By default, the initializer will load them from environment variables (e.g. `ENV["OPENAI_API_KEY"]`). Alternatively, you can set them directly in `config/initializers/raif.rb`.
-
 Run the migrations. Raif is compatible with both PostgreSQL and MySQL databases.
 ```bash
 rails db:migrate
@@ -80,21 +77,7 @@ end
 
 Configure your LLM providers. You'll need at least one of:
 
-## OpenAI
-```ruby
-Raif.configure do |config|
-  config.open_ai_models_enabled = true
-  config.open_ai_api_key = ENV["OPENAI_API_KEY"]
-  config.default_llm_model_key = "open_ai_gpt_4o"
-end
-```
-
-Currently supported OpenAI models:
-- `open_ai_gpt_4o_mini`
-- `open_ai_gpt_4o`
-- `open_ai_gpt_3_5_turbo`
-
-## AWS Bedrock (Claude)
+## AWS Bedrock
 ```ruby
 Raif.configure do |config|
   config.bedrock_models_enabled = true
@@ -118,7 +101,7 @@ When using Raif, it's often useful to use one of the [higher level abstractions]
 
 Call `Raif::Llm#chat` with either a `message` string or `messages` array.:
 ```ruby
-llm = Raif.llm(:open_ai_gpt_4o) # will return a Raif::Llm instance
+llm = Raif.llm(:bedrock_nova_pro) # will return a Raif::Llm instance
 model_completion = llm.chat(message: "Hello")
 puts model_completion.raw_response
 # => "Hello! How can I assist you today?"
@@ -126,7 +109,7 @@ puts model_completion.raw_response
 
 The `Raif::ModelCompletion` class will handle parsing the response for you, should you ask for a different response format (which can be one of `:html`, `:text`, or `:json`). You can also provide a `system_prompt` to the `chat` method:
 ```ruby
-llm = Raif.llm(:open_ai_gpt_4o)
+llm = Raif.llm(:bedrock_nova_pro)
 messages = [
   { role: "user", content: "Hello" },
   { role: "assistant", content: "Hello! How can I assist you today?" },
@@ -206,7 +189,7 @@ summary = task.parsed_response
 
 ### JSON Response Format Tasks
 
-If you want to use a JSON response format for your task, you can do so by setting the `llm_response_format` to `:json` in your task subclass. If you're using OpenAI, this will set the response to use [JSON mode](https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat#json-mode). You can also define a JSON schema, which will then trigger utilization of OpenAI's [structured outputs](https://platform.openai.com/docs/guides/structured-outputs?api-mode=chat#structured-outputs) feature. If you're using Claude, it will create a tool for Claude to use to generate a JSON response.
+If you want to use a JSON response format for your task, you can do so by setting the `llm_response_format` to `:json` in your task subclass
 
 ```bash
 rails generate raif:task WebSearchQueryGeneration --response-format json
@@ -501,7 +484,7 @@ image = Raif::ModelImageInput.new(url: "https://example.com/image.png")
 image = Raif::ModelImageInput.new(input: user.avatar)
 
 # Then chat with the LLM
-llm = Raif.llm(:open_ai_gpt_4o)
+llm = Raif.llm(:bedrock_nova_pro)
 model_completion = llm.chat(messages: [
   { role: "user", content: ["What's in this image?", image]}
 ])
@@ -519,7 +502,7 @@ file = Raif::ModelFileInput.new(url: "https://example.com/file.pdf")
 file = Raif::ModelFileInput.new(input: document.pdf)
 
 # Then chat with the LLM
-llm = Raif.llm(:open_ai_gpt_4o)
+llm = Raif.llm(:bedrock_nova_pro)
 model_completion = llm.chat(messages: [
   { role: "user", content: ["What's in this file?", file]}
 ])
@@ -558,21 +541,15 @@ Raif supports generation of vector embeddings. You can enable and configure embe
 
 ```ruby
 Raif.configure do |config|
-  config.open_ai_embedding_models_enabled = true
-  config.bedrock_titan_embedding_models_enabled = true
+  config.bedrock_embedding_models_enabled = true
   
-  config.default_embedding_model_key = "open_ai_text_embedding_3_small"
+  config.default_embedding_model_key = "bedrock_titan_embed_text_v2"
 end
 ```
 
 ## Supported Embedding Models
 
 Raif currently supports the following embedding models:
-
-### OpenAI
-- `open_ai_text_embedding_3_small`
-- `open_ai_text_embed ding_3_large`
-- `open_ai_text_embedding_ada_002`
 
 ### AWS Bedrock
 - `bedrock_titan_embed_text_v2`
@@ -588,17 +565,10 @@ embedding = Raif.generate_embedding!("Your text here")
 # Generate an embedding for a piece of text with a specific number of dimensions
 embedding = Raif.generate_embedding!("Your text here", dimensions: 1024)
 
-# If you're using an OpenAI embedding model, you can pass an array of strings to embed multiple texts at once
-embeddings = Raif.generate_embedding!([
-  "Your text here",
-  "Your other text here"
-])
-```
-
 Or to generate embeddings for a piece of text with a specific model:
 
 ```ruby
-model = Raif.embedding_model(:open_ai_text_embedding_3_small)
+model = Raif.embedding_model(:bedrock_titan_embed_text_v2)
 embedding = model.generate_embedding!("Your text here")
 ```
 
@@ -759,22 +729,6 @@ end
 ```
 
 Raif also provides FactoryBot factories for its models. You can use them to create Raif models for testing. If you're using `factory_bot_rails`, they will be added automatically to `config.factory_bot.definition_file_paths`. The available factories can be found [here](https://github.com/CultivateLabs/raif/tree/main/spec/factories/shared).
-
-# Demo App
-
-Raif includes a [demo app](https://github.com/CultivateLabs/raif_demo) that you can use to see the engine in action. Assuming you have Ruby 3.4.2 and Postgres installed, you can run the demo app with:
-
-```bash
-git clone git@github.com:CultivateLabs/raif_demo.git
-cd raif_demo
-bundle install
-bin/rails db:create db:prepare
-OPENAI_API_KEY=your-openai-api-key-here bin/rails s
-```
-
-You can then access the app at [http://localhost:3000](http://localhost:3000).
-
-![Demo App Screenshot](./screenshots/demo-app.png)
 
 # License
 

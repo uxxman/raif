@@ -110,7 +110,7 @@ RSpec.describe "Admin::Agents", type: :feature do
         iteration_count: 2,
         max_iterations: 5,
         final_answer: "The capital of France is Paris.",
-        llm_model_key: "open_ai_gpt_4o",
+        llm_model_key: "bedrock_nova_pro",
         conversation_history: [
           { role: "user", content: "What is the capital of France?" },
           { role: "assistant", content: "<thought>I need to determine the capital of France.</thought>" },
@@ -122,7 +122,7 @@ RSpec.describe "Admin::Agents", type: :feature do
     let!(:model_completion) do
       Raif::ModelCompletion.create!(
         source: agent,
-        llm_model_key: "open_ai_gpt_4o",
+        llm_model_key: "bedrock_nova_pro",
         model_api_name: "gpt-4o",
         response_format: "text",
         raw_response: "<thought>I need to determine the capital of France.</thought>\n<answer>The capital of France is Paris.</answer>",
@@ -141,7 +141,7 @@ RSpec.describe "Admin::Agents", type: :feature do
       expect(page).to have_content(agent.id.to_s)
       expect(page).to have_content(agent.creator_type)
       expect(page).to have_content(agent.creator_id.to_s)
-      expect(page).to have_content("open_ai_gpt_4o")
+      expect(page).to have_content("bedrock_nova_pro")
 
       # Check status
       expect(page).to have_css(".badge.bg-success", text: "Completed")
@@ -166,7 +166,7 @@ RSpec.describe "Admin::Agents", type: :feature do
       expect(page).to have_content(I18n.t("raif.admin.common.model_completions"))
       expect(page).to have_link("##{model_completion.id}", href: raif.admin_model_completion_path(model_completion))
       expect(page).to have_content(model_completion.created_at.rfc822)
-      expect(page).to have_content("open_ai_gpt_4o")
+      expect(page).to have_content("bedrock_nova_pro")
       expect(page).to have_content("150")
       expect(page).to have_content("<thought>I need to determine the capital of France.</thought>")
 

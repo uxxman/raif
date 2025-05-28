@@ -1,15 +1,6 @@
 # frozen_string_literal: true
 
 Raif.configure do |config|
-  # Your OpenAI API key. Defaults to ENV["OPENAI_API_KEY"]
-  # config.open_ai_api_key = ENV["OPENAI_API_KEY"]
-
-  # Whether OpenAI models are enabled.
-  # config.open_ai_models_enabled = ENV["OPENAI_API_KEY"].present?
-
-  # Whether OpenAI embedding models are enabled.
-  # config.open_ai_embedding_models_enabled = ENV["OPENAI_API_KEY"].present?
-
   # Whether models via AWS Bedrock are enabled. Defaults to false
   # config.bedrock_models_enabled = false
 
@@ -22,31 +13,22 @@ Raif.configure do |config|
   # Whether Titan embedding models are enabled. Defaults to false
   # config.bedrock_embedding_models_enabled = false
 
-  # The default LLM model to use. Defaults to "open_ai_gpt_4o"
+  # The default LLM model to use. Defaults to "bedrock_nova_pro"
   # Available keys:
-  #   open_ai_gpt_4_1
-  #   open_ai_gpt_4_1_mini
-  #   open_ai_gpt_4_1_nano
-  #   open_ai_gpt_4o_mini
-  #   open_ai_gpt_4o
-  #   open_ai_gpt_3_5_turbo
   #   bedrock_claude_3_5_sonnet
   #   bedrock_claude_3_7_sonnet
   #   bedrock_claude_3_5_haiku
   #   bedrock_claude_3_opus
   #   bedrock_nova_pro
   #
-  # config.default_llm_model_key = "open_ai_gpt_4o"
+  # config.default_llm_model_key = "bedrock_nova_pro"
 
   # The default embedding model to use when calling Raif.generate_embedding!
-  # Defaults to "open_ai_text_embedding_3_small"
+  # Defaults to "bedrock_titan_embed_text_v2"
   # Available keys:
-  #   open_ai_text_embedding_3_small
-  #   open_ai_text_embedding_3_large
-  #   open_ai_text_embedding_ada_002
   #   bedrock_titan_embed_text_v2
   #
-  # config.default_embedding_model_key = "open_ai_text_embedding_3_small"
+  # config.default_embedding_model_key = "bedrock_titan_embed_text_v2"
 
   # A lambda that returns true if the current user is authorized to access admin controllers.
   # By default it returns false, so you must implement this in your application to use the admin controllers.

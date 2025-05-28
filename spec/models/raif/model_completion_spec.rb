@@ -18,17 +18,18 @@ RSpec.describe Raif::ModelCompletion, type: :model do
 
     it "validates inclusion of response_format in valid formats" do
       expect do
-        described_class.new(response_format: "invalid_format", llm_model_key: "open_ai_gpt_4o")
+        described_class.new(response_format: "invalid_format", llm_model_key: "bedrock_claude_3_5_sonnet")
       end.to raise_error(ArgumentError, "'invalid_format' is not a valid response_format")
     end
   end
 
+  
   describe "callbacks" do
     describe "#set_total_tokens" do
       it "sets total_tokens based on completion_tokens and prompt_tokens" do
         model_completion = described_class.new(
-          llm_model_key: "open_ai_gpt_4o",
-          model_api_name: "gpt-4o",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           prompt_tokens: 100,
           completion_tokens: 50
         )
@@ -39,8 +40,8 @@ RSpec.describe Raif::ModelCompletion, type: :model do
 
       it "does not set total_tokens if completion_tokens is missing" do
         model_completion = described_class.new(
-          llm_model_key: "open_ai_gpt_4o",
-          model_api_name: "gpt-4o",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           prompt_tokens: 100
         )
 
@@ -50,8 +51,8 @@ RSpec.describe Raif::ModelCompletion, type: :model do
 
       it "does not set total_tokens if prompt_tokens is missing" do
         model_completion = described_class.new(
-          llm_model_key: "open_ai_gpt_4o",
-          model_api_name: "gpt-4o",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           completion_tokens: 50
         )
 
@@ -63,12 +64,12 @@ RSpec.describe Raif::ModelCompletion, type: :model do
     describe "#calculate_costs" do
       it "calculates prompt_token_cost based on input_token_cost and prompt_tokens" do
         model_completion = described_class.new(
-          llm_model_key: "open_ai_gpt_4o",
-          model_api_name: "gpt-4o",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           prompt_tokens: 1000
         )
 
-        # open_ai_gpt_4o has an input_token_cost of 2.5 / 1_000_000
+        # An input_token_cost of 2.5 / 1_000_000
         expected_cost = 2.5 / 1_000_000 * 1000
 
         model_completion.save(validate: false)
@@ -77,12 +78,12 @@ RSpec.describe Raif::ModelCompletion, type: :model do
 
       it "calculates output_token_cost based on output_token_cost and completion_tokens" do
         model_completion = described_class.new(
-          llm_model_key: "open_ai_gpt_4o",
-          model_api_name: "gpt-4o",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           completion_tokens: 500
         )
 
-        # open_ai_gpt_4o has an output_token_cost of 10.0 / 1_000_000
+        # An output_token_cost of 10.0 / 1_000_000
         expected_cost = 10.0 / 1_000_000 * 500
 
         model_completion.save(validate: false)
@@ -91,13 +92,13 @@ RSpec.describe Raif::ModelCompletion, type: :model do
 
       it "calculates total_cost based on prompt_token_cost and output_token_cost" do
         model_completion = described_class.new(
-          llm_model_key: "open_ai_gpt_4o",
-          model_api_name: "gpt-4o",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           prompt_tokens: 1000,
           completion_tokens: 500
         )
 
-        # open_ai_gpt_4o has an input_token_cost of 2.5 / 1_000_000 and output_token_cost of 10.0 / 1_000_000
+        # An input_token_cost of 2.5 / 1_000_000 and output_token_cost of 10.0 / 1_000_000
         expected_prompt_cost = 2.5 / 1_000_000 * 1000
         expected_output_cost = 10.0 / 1_000_000 * 500
         expected_total_cost = expected_prompt_cost + expected_output_cost
@@ -108,12 +109,12 @@ RSpec.describe Raif::ModelCompletion, type: :model do
 
       it "calculates total_cost when only prompt_token_cost is present" do
         model_completion = described_class.new(
-          llm_model_key: "open_ai_gpt_4o",
-          model_api_name: "gpt-4o",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           prompt_tokens: 1000
         )
 
-        # open_ai_gpt_4o has an input_token_cost of 2.5 / 1_000_000
+        # An input_token_cost of 2.5 / 1_000_000
         expected_prompt_cost = 2.5 / 1_000_000 * 1000
 
         model_completion.save(validate: false)
@@ -122,12 +123,12 @@ RSpec.describe Raif::ModelCompletion, type: :model do
 
       it "calculates total_cost when only output_token_cost is present" do
         model_completion = described_class.new(
-          llm_model_key: "open_ai_gpt_4o",
-          model_api_name: "gpt-4o",
+          llm_model_key: "bedrock_claude_3_5_sonnet",
+          model_api_name: "anthropic.claude-3-5-sonnet-20240620-v1:0",
           completion_tokens: 500
         )
 
-        # open_ai_gpt_4o has an output_token_cost of 10.0 / 1_000_000
+        # An output_token_cost of 10.0 / 1_000_000
         expected_output_cost = 10.0 / 1_000_000 * 500
 
         model_completion.save(validate: false)
@@ -163,7 +164,7 @@ RSpec.describe Raif::ModelCompletion, type: :model do
         described_class.new(
           response_format: "text",
           raw_response: "  This is a text response.  ",
-          llm_model_key: "open_ai_gpt_4o"
+          llm_model_key: "bedrock_claude_3_5_sonnet"
         )
       end
 
@@ -178,7 +179,7 @@ RSpec.describe Raif::ModelCompletion, type: :model do
           described_class.new(
             response_format: "json",
             raw_response: '{"key": "value", "array": [1, 2, 3]}',
-            llm_model_key: "open_ai_gpt_4o"
+            llm_model_key: "bedrock_claude_3_5_sonnet"
           )
         end
 
@@ -192,7 +193,7 @@ RSpec.describe Raif::ModelCompletion, type: :model do
           described_class.new(
             response_format: "json",
             raw_response: "```json\n{\"key\": \"value\"}\n```",
-            llm_model_key: "open_ai_gpt_4o"
+            llm_model_key: "bedrock_claude_3_5_sonnet"
           )
         end
 
@@ -208,7 +209,7 @@ RSpec.describe Raif::ModelCompletion, type: :model do
           described_class.new(
             response_format: "html",
             raw_response: "<div><p>Hello</p><p>World</p></div>",
-            llm_model_key: "open_ai_gpt_4o"
+            llm_model_key: "bedrock_claude_3_5_sonnet"
           )
         end
 
@@ -222,7 +223,7 @@ RSpec.describe Raif::ModelCompletion, type: :model do
           described_class.new(
             response_format: "html",
             raw_response: "```html\n<div><p>Hello</p></div>\n```",
-            llm_model_key: "open_ai_gpt_4o"
+            llm_model_key: "bedrock_claude_3_5_sonnet"
           )
         end
 
@@ -236,7 +237,7 @@ RSpec.describe Raif::ModelCompletion, type: :model do
           described_class.new(
             response_format: "html",
             raw_response: "<div>\n  <p>Hello</p>\n  \n  <p>World</p>\n</div>",
-            llm_model_key: "open_ai_gpt_4o"
+            llm_model_key: "bedrock_claude_3_5_sonnet"
           )
         end
 
@@ -254,7 +255,7 @@ RSpec.describe Raif::ModelCompletion, type: :model do
           described_class.new(
             response_format: "html",
             raw_response: "<div><script>alert('XSS')</script><p>Safe content</p></div>",
-            llm_model_key: "open_ai_gpt_4o"
+            llm_model_key: "bedrock_claude_3_5_sonnet"
           )
         end
 

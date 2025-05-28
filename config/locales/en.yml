@@ -19,9 +19,6 @@ en:
       initial_chat_message: Hello, how can I help you today?
     embedding_model_names:
       bedrock_titan_embed_text_v2: AWS Bedrock Titan Text Embeddings v2
-      open_ai_text_embedding_3_large: OpenAI Text Embedding 3 Large
-      open_ai_text_embedding_3_small: OpenAI Text Embedding 3 Small
-      open_ai_text_embedding_ada_002: OpenAI Text Embedding Ada 002
     languages:
       ar: Arabic
       da: Danish
@@ -53,10 +50,4 @@ en:
       bedrock_claude_4_opus: Claude 4 Opus (via AWS Bedrock)
       bedrock_claude_4_sonnet: Claude 4 Sonnet (via AWS Bedrock)
       bedrock_nova_pro: Amazon Nova Pro (via AWS Bedrock)
-      open_ai_gpt_3_5_turbo: OpenAI GPT-3.5 Turbo
-      open_ai_gpt_4_1: OpenAI GPT-4.1
-      open_ai_gpt_4_1_mini: OpenAI GPT-4.1 Mini
-      open_ai_gpt_4_1_nano: OpenAI GPT-4.1 Nano
-      open_ai_gpt_4o: OpenAI GPT-4o
-      open_ai_gpt_4o_mini: OpenAI GPT-4o Mini
       raif_test_llm: Raif Test LLM

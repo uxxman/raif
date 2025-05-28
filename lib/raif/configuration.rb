@@ -20,9 +20,6 @@ module Raif
       :llm_request_max_retries,
       :llm_request_retriable_exceptions,
       :model_superclass,
-      :open_ai_api_key,
-      :open_ai_embedding_models_enabled,
-      :open_ai_models_enabled,
       :task_system_prompt_intro,
       :user_tool_types
 
@@ -41,8 +38,8 @@ module Raif
       @conversation_types = Set.new(["Raif::Conversation"])
       @conversations_controller = "Raif::ConversationsController"
       @current_user_method = :current_user
-      @default_embedding_model_key = "open_ai_text_embedding_3_small"
-      @default_llm_model_key = "open_ai_gpt_4o"
+      @default_embedding_model_key = "bedrock_titan_embed_text_v2"
+      @default_llm_model_key = "bedrock_nova_pro"
       @llm_api_requests_enabled = true
       @llm_request_max_retries = 2
       @llm_request_retriable_exceptions = [
@@ -51,9 +48,6 @@ module Raif
         Faraday::ServerError,
       ]
       @model_superclass = "ApplicationRecord"
-      @open_ai_api_key = ENV["OPENAI_API_KEY"]
-      @open_ai_embedding_models_enabled = ENV["OPENAI_API_KEY"].present?
-      @open_ai_models_enabled = ENV["OPENAI_API_KEY"].present?
       @user_tool_types = []
     end
 
@@ -62,7 +56,7 @@ module Raif
         puts <<~EOS
 
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          No LLMs are enabled in Raif. Make sure you have an API key configured for at least one LLM provider. You can do this by setting an API key in your environment variables or in config/initializers/raif.rb (e.g. ENV["OPENAI_API_KEY"]).
+          No LLMs are enabled in Raif. Make sure you have an API key configured for at least one LLM provider. You can do this by setting an API key in your environment variables or in config/initializers/raif.rb.
 
           See the README for more information: https://github.com/CultivateLabs/raif#setup
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -94,16 +88,6 @@ module Raif
       else
         raise Raif::Errors::InvalidConfigError,
           "Raif.config.authorize_admin_controller_action must respond to :call and return a boolean"
-      end
-
-      if open_ai_models_enabled && open_ai_api_key.blank?
-        raise Raif::Errors::InvalidConfigError,
-          "Raif.config.open_ai_api_key is required when Raif.config.open_ai_models_enabled is true. Set it via Raif.config.open_ai_api_key or ENV[\"OPENAI_API_KEY\"]" # rubocop:disable Layout/LineLength
-      end
-
-      if open_ai_embedding_models_enabled && open_ai_api_key.blank?
-        raise Raif::Errors::InvalidConfigError,
-          "Raif.config.open_ai_api_key is required when Raif.config.open_ai_embedding_models_enabled is true. Set it via Raif.config.open_ai_api_key or ENV[\"OPENAI_API_KEY\"]" # rubocop:disable Layout/LineLength
       end
     end
 
