@@ -24,18 +24,35 @@ RSpec.describe Raif::Llms::OpenAiCompletions, type: :model do
     context "when the response format is text" do
       let(:response_body) do
         {
-          "choices" => [
-            {
-              "message" => {
-                "content" => "Response content"
-              }
-            }
-          ],
+          "id" => "chatcmpl-abc123",
+          "object" => "chat.completion",
+          "created" => 1748387703,
+          "model" => "gpt-4.1-mini-2025-04-14",
+          "choices" => [{
+            "index" => 0,
+            "message" => {
+              "role" => "assistant",
+              "content" => "Hello! How can I assist you today?",
+              "refusal" => nil,
+              "annotations" => []
+            },
+            "logprobs" => nil,
+            "finish_reason" => "stop"
+          }],
           "usage" => {
-            "completion_tokens" => 10,
-            "prompt_tokens" => 5,
-            "total_tokens" => 15
-          }
+            "prompt_tokens" => 8,
+            "completion_tokens" => 9,
+            "total_tokens" => 17,
+            "prompt_tokens_details" => { "cached_tokens" => 0, "audio_tokens" => 0 },
+            "completion_tokens_details" => {
+              "reasoning_tokens" => 0,
+              "audio_tokens" => 0,
+              "accepted_prediction_tokens" => 0,
+              "rejected_prediction_tokens" => 0
+            }
+          },
+          "service_tier" => "default",
+          "system_fingerprint" => "fp_79b79be41f"
         }
       end
 
@@ -48,10 +65,10 @@ RSpec.describe Raif::Llms::OpenAiCompletions, type: :model do
       it "makes a request to the OpenAI API and processes the response" do
         model_completion = llm.chat(messages: [{ role: "user", content: "Hello" }], system_prompt: "You are a helpful assistant")
 
-        expect(model_completion.raw_response).to eq("Response content")
-        expect(model_completion.completion_tokens).to eq(10)
-        expect(model_completion.prompt_tokens).to eq(5)
-        expect(model_completion.total_tokens).to eq(15)
+        expect(model_completion.raw_response).to eq("Hello! How can I assist you today?")
+        expect(model_completion.completion_tokens).to eq(9)
+        expect(model_completion.prompt_tokens).to eq(8)
+        expect(model_completion.total_tokens).to eq(17)
         expect(model_completion).to be_persisted
         expect(model_completion.messages).to eq([{ "role" => "user", "content" => [{ "text" => "Hello", "type" => "text" }] }])
         expect(model_completion.system_prompt).to eq("You are a helpful assistant")
@@ -62,31 +79,53 @@ RSpec.describe Raif::Llms::OpenAiCompletions, type: :model do
         expect(model_completion.llm_model_key).to eq("open_ai_gpt_4o")
         expect(model_completion.model_api_name).to eq("gpt-4o")
         expect(model_completion.response_format_parameter).to be_nil
-        expect(model_completion.response_array).to eq([
-          {
-            "message" => {
-              "content" => "Response content"
-            }
+        expect(model_completion.response_id).to eq("chatcmpl-abc123")
+        expect(model_completion.response_array).to eq([{
+          "finish_reason" => "stop",
+          "index" => 0,
+          "logprobs" => nil,
+          "message" => {
+            "annotations" => [],
+            "content" => "Hello! How can I assist you today?",
+            "refusal" => nil,
+            "role" => "assistant"
           }
-        ])
+        }])
       end
     end
 
     context "when the response format is json" do
       let(:response_body) do
         {
-          "choices" => [
-            {
-              "message" => {
-                "content" => "{\n  \"joke\": \"Why don't scientists trust atoms? Because they make up everything!\"\n}"
-              }
-            }
-          ],
+          "id" => "chatcmpl-abc123",
+          "object" => "chat.completion",
+          "created" => 1748387899,
+          "model" => "gpt-4.1-mini-2025-04-14",
+          "choices" => [{
+            "index" => 0,
+            "message" => {
+              "role" => "assistant",
+              "content" => "{\n  \"joke\": \"Why don't scientists trust atoms? Because they make up everything!\"\n}",
+              "refusal" => nil,
+              "annotations" => []
+            },
+            "logprobs" => nil,
+            "finish_reason" => "stop"
+          }],
           "usage" => {
-            "completion_tokens" => 10,
-            "prompt_tokens" => 15,
-            "total_tokens" => 25
-          }
+            "prompt_tokens" => 90,
+            "completion_tokens" => 20,
+            "total_tokens" => 110,
+            "prompt_tokens_details" => { "cached_tokens" => 0, "audio_tokens" => 0 },
+            "completion_tokens_details" => {
+              "reasoning_tokens" => 0,
+              "audio_tokens" => 0,
+              "accepted_prediction_tokens" => 0,
+              "rejected_prediction_tokens" => 0
+            }
+          },
+          "service_tier" => "default",
+          "system_fingerprint" => "fp_abc123"
         }
       end
 
@@ -100,7 +139,7 @@ RSpec.describe Raif::Llms::OpenAiCompletions, type: :model do
         messages = [
           { role: "user", content: "Hello" },
           { role: "assistant", content: "Hello! How can I assist you today?" },
-          { role: "user", content: "Can you you tell me a joke?" },
+          { role: "user", content: "Can you you tell me a joke? Respond in json." },
         ]
 
         system_prompt = "You are a helpful assistant who specializes in telling jokes. Your response should be a properly formatted JSON object containing a single `joke` key. Do not include any other text in your response outside the JSON object." # rubocop:disable Layout/LineLength
@@ -109,14 +148,14 @@ RSpec.describe Raif::Llms::OpenAiCompletions, type: :model do
 
         expect(model_completion.raw_response).to eq("{\n  \"joke\": \"Why don't scientists trust atoms? Because they make up everything!\"\n}")
         expect(model_completion.parsed_response).to eq({ "joke" => "Why don't scientists trust atoms? Because they make up everything!" })
-        expect(model_completion.completion_tokens).to eq(10)
-        expect(model_completion.prompt_tokens).to eq(15)
-        expect(model_completion.total_tokens).to eq(25)
+        expect(model_completion.completion_tokens).to eq(20)
+        expect(model_completion.prompt_tokens).to eq(90)
+        expect(model_completion.total_tokens).to eq(110)
         expect(model_completion).to be_persisted
         expect(model_completion.messages).to eq([
           { "role" => "user", "content" => [{ "text" => "Hello", "type" => "text" }] },
           { "role" => "assistant", "content" => [{ "text" => "Hello! How can I assist you today?", "type" => "text" }] },
-          { "role" => "user", "content" => [{ "text" => "Can you you tell me a joke?", "type" => "text" }] }
+          { "role" => "user", "content" => [{ "text" => "Can you you tell me a joke? Respond in json.", "type" => "text" }] }
         ])
         expect(model_completion.system_prompt).to eq(system_prompt)
         expect(model_completion.temperature).to eq(0.7)
@@ -126,11 +165,18 @@ RSpec.describe Raif::Llms::OpenAiCompletions, type: :model do
         expect(model_completion.llm_model_key).to eq("open_ai_gpt_4o")
         expect(model_completion.model_api_name).to eq("gpt-4o")
         expect(model_completion.response_format_parameter).to eq("json_object")
+        expect(model_completion.response_id).to eq("chatcmpl-abc123")
         expect(model_completion.response_array).to eq([
           {
+            "index" => 0,
             "message" => {
-              "content" => "{\n  \"joke\": \"Why don't scientists trust atoms? Because they make up everything!\"\n}"
-            }
+              "role" => "assistant",
+              "content" => "{\n  \"joke\": \"Why don't scientists trust atoms? Because they make up everything!\"\n}",
+              "refusal" => nil,
+              "annotations" => []
+            },
+            "logprobs" => nil,
+            "finish_reason" => "stop"
           }
         ])
       end

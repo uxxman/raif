@@ -15,6 +15,7 @@ class Raif::Llms::OpenAiCompletions < Raif::Llms::OpenAiBase
     response_json = response.body
 
     model_completion.update!(
+      response_id: response_json["id"],
       response_tool_calls: extract_response_tool_calls(response_json),
       raw_response: response_json.dig("choices", 0, "message", "content"),
       response_array: response_json["choices"],

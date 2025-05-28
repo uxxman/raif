@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe Raif::Llms::Anthropic, type: :model do
-  let(:llm){ Raif.llm(:anthropic_claude_3_opus) }
+  let(:llm){ Raif.llm(:anthropic_claude_3_5_haiku) }
   let(:stubs) { Faraday::Adapter::Test::Stubs.new }
   let(:test_connection) do
     Faraday.new do |builder|
@@ -22,8 +22,23 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
     context "when the response format is text" do
       let(:response_body) do
         {
-          "content" => [{ "type" => "text", "text" => "Response content" }],
-          "usage" => { "input_tokens" => 5, "output_tokens" => 10 }
+          "id" => "msg_abc123",
+          "type" => "message",
+          "role" => "assistant",
+          "model" => "claude-3-5-haiku-20241022",
+          "content" => [{
+            "type" => "text",
+            "text" => "Hi there! How are you doing today? Is there anything I can help you with?"
+          }],
+          "stop_reason" => "end_turn",
+          "stop_sequence" => nil,
+          "usage" => {
+            "input_tokens" => 8,
+            "cache_creation_input_tokens" => 0,
+            "cache_read_input_tokens" => 0,
+            "output_tokens" => 21,
+            "service_tier" => "standard"
+          }
         }
       end
 
@@ -36,24 +51,45 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
       it "makes a request to the Anthropic API and processes the text response" do
         model_completion = llm.chat(messages: [{ role: "user", content: "Hello" }], system_prompt: "You are a helpful assistant.")
 
-        expect(model_completion.raw_response).to eq("Response content")
-        expect(model_completion.completion_tokens).to eq(10)
-        expect(model_completion.prompt_tokens).to eq(5)
-        expect(model_completion.total_tokens).to eq(15)
-        expect(model_completion.llm_model_key).to eq("anthropic_claude_3_opus")
-        expect(model_completion.model_api_name).to eq("claude-3-opus-latest")
+        expect(model_completion.raw_response).to eq("Hi there! How are you doing today? Is there anything I can help you with?")
+        expect(model_completion.completion_tokens).to eq(21)
+        expect(model_completion.prompt_tokens).to eq(8)
+        expect(model_completion.total_tokens).to eq(29)
+        expect(model_completion.llm_model_key).to eq("anthropic_claude_3_5_haiku")
+        expect(model_completion.model_api_name).to eq("claude-3-5-haiku-latest")
         expect(model_completion.response_format).to eq("text")
         expect(model_completion.temperature).to eq(0.7)
         expect(model_completion.system_prompt).to eq("You are a helpful assistant.")
-        expect(model_completion.response_array).to eq([{ "type" => "text", "text" => "Response content" }])
+        expect(model_completion.response_id).to eq("msg_abc123")
+        expect(model_completion.response_array).to eq([{
+          "type" => "text",
+          "text" => "Hi there! How are you doing today? Is there anything I can help you with?"
+        }])
       end
     end
 
     context "when the response format is JSON and model does not use json_response tool" do
       let(:response_body) do
         {
-          "content" => [{ "type" => "text", "text" => "{\"name\": \"John\", \"age\": 30}" }],
-          "usage" => { "input_tokens" => 5, "output_tokens" => 10 }
+          "id" => "msg_abc123",
+          "type" => "message",
+          "role" => "assistant",
+          "model" => "claude-3-5-haiku-20241022",
+          "content" => [
+            {
+              "type" => "text",
+              "text" => "{\n    \"name\": \"Emily Johnson\",\n    \"age\": 28\n}"
+            }
+          ],
+          "stop_reason" => "end_turn",
+          "stop_sequence" => nil,
+          "usage" => {
+            "input_tokens" => 35,
+            "cache_creation_input_tokens" => 0,
+            "cache_read_input_tokens" => 0,
+            "output_tokens" => 22,
+            "service_tier" => "standard"
+          }
         }
       end
 
@@ -65,19 +101,20 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
 
       it "makes a request to the Anthropic API and processes the JSON response" do
         model_completion = llm.chat(
-          messages: [{ role: "user", content: "Hello" }],
+          messages: [{ role: "user", content: "Please give me a JSON object with a name and age. Don't include any other text in your response." }],
           system_prompt: "You are a helpful assistant.",
           response_format: :json
         )
 
-        expect(model_completion.raw_response).to eq("{\"name\": \"John\", \"age\": 30}")
-        expect(model_completion.completion_tokens).to eq(10)
-        expect(model_completion.prompt_tokens).to eq(5)
-        expect(model_completion.total_tokens).to eq(15)
-        expect(model_completion.llm_model_key).to eq("anthropic_claude_3_opus")
-        expect(model_completion.model_api_name).to eq("claude-3-opus-latest")
+        expect(model_completion.raw_response).to eq("{\n    \"name\": \"Emily Johnson\",\n    \"age\": 28\n}")
+        expect(model_completion.completion_tokens).to eq(22)
+        expect(model_completion.prompt_tokens).to eq(35)
+        expect(model_completion.total_tokens).to eq(57)
+        expect(model_completion.llm_model_key).to eq("anthropic_claude_3_5_haiku")
+        expect(model_completion.model_api_name).to eq("claude-3-5-haiku-latest")
         expect(model_completion.response_format).to eq("json")
-        expect(model_completion.response_array).to eq([{ "type" => "text", "text" => "{\"name\": \"John\", \"age\": 30}" }])
+        expect(model_completion.response_id).to eq("msg_abc123")
+        expect(model_completion.response_array).to eq([{ "type" => "text", "text" => "{\n    \"name\": \"Emily Johnson\",\n    \"age\": 28\n}" }])
       end
     end
 
@@ -86,17 +123,28 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
 
       let(:response_body) do
         {
-          "content" => [
-            {
-              "type" => "tool_use",
-              "name" => "json_response",
-              "input" => {
-                "joke" => "Why do programmers prefer dark mode?",
-                "answer" => "Because light attracts bugs!"
-              }
+          "id" => "msg_abc123",
+          "type" => "message",
+          "role" => "assistant",
+          "model" => "claude-3-5-haiku-20241022",
+          "content" => [{
+            "type" => "tool_use",
+            "id" => "toolu_abc123",
+            "name" => "json_response",
+            "input" => {
+              "joke" => "Why don't scientists trust atoms?",
+              "answer" => "Because they make up everything!"
             }
-          ],
-          "usage" => { "input_tokens" => 8, "output_tokens" => 15 }
+          }],
+          "stop_reason" => "tool_use",
+          "stop_sequence" => nil,
+          "usage" => {
+            "input_tokens" => 371,
+            "cache_creation_input_tokens" => 0,
+            "cache_read_input_tokens" => 0,
+            "output_tokens" => 80,
+            "service_tier" => "standard"
+          }
         }
       end
 
@@ -116,14 +164,17 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
 
       it "extracts JSON response from json_response tool call" do
         model_completion = llm.chat(
-          messages: [{ role: "user", content: "Tell me a joke" }],
+          messages: [{
+            role: "user",
+            content: "Please give me a JSON object with a joke and answer. Don't include any other text in your response."
+          }],
           response_format: :json,
           source: test_task
         )
 
         expected_json = JSON.generate({
-          "joke" => "Why do programmers prefer dark mode?",
-          "answer" => "Because light attracts bugs!"
+          "joke" => "Why don't scientists trust atoms?",
+          "answer" => "Because they make up everything!"
         })
 
         expect(model_completion.raw_response).to eq(expected_json)
@@ -131,24 +182,25 @@ RSpec.describe Raif::Llms::Anthropic, type: :model do
           {
             "name" => "json_response",
             "arguments" => {
-              "joke" => "Why do programmers prefer dark mode?",
-              "answer" => "Because light attracts bugs!"
+              "joke" => "Why don't scientists trust atoms?",
+              "answer" => "Because they make up everything!"
             }
           }
         ])
-        expect(model_completion.completion_tokens).to eq(15)
-        expect(model_completion.prompt_tokens).to eq(8)
+        expect(model_completion.completion_tokens).to eq(80)
+        expect(model_completion.prompt_tokens).to eq(371)
+        expect(model_completion.total_tokens).to eq(451)
         expect(model_completion.response_format).to eq("json")
-        expect(model_completion.response_array).to eq([
-          {
-            "type" => "tool_use",
-            "name" => "json_response",
-            "input" => {
-              "joke" => "Why do programmers prefer dark mode?",
-              "answer" => "Because light attracts bugs!"
-            }
-          }
-        ])
+        expect(model_completion.response_id).to eq("msg_abc123")
+        expect(model_completion.response_array).to eq([{
+          "id" => "toolu_abc123",
+          "input" => {
+            "answer" => "Because they make up everything!",
+            "joke" => "Why don't scientists trust atoms?"
+          },
+          "name" => "json_response",
+          "type" => "tool_use"
+        }])
       end
     end
 

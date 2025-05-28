@@ -93,6 +93,7 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
         expect(model_completion.llm_model_key).to eq("open_ai_responses_gpt_4o")
         expect(model_completion.model_api_name).to eq("gpt-4o")
         expect(model_completion.response_format_parameter).to be_nil
+        expect(model_completion.response_id).to eq("resp_abc123")
         expect(model_completion.response_array).to eq([
           {
             "id" => "msg_abc123",
@@ -194,6 +195,7 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
         expect(model_completion.llm_model_key).to eq("open_ai_responses_gpt_4o")
         expect(model_completion.model_api_name).to eq("gpt-4o")
         expect(model_completion.response_format_parameter).to eq("json_object")
+        expect(model_completion.response_id).to eq("resp_abc123")
         expect(model_completion.response_array).to eq([{
           "id" => "msg_abc123",
           "type" => "message",
@@ -282,6 +284,7 @@ RSpec.describe Raif::Llms::OpenAiResponses, type: :model do
           }
         ])
         expect(model_completion.raw_response).to eq(nil)
+        expect(model_completion.response_id).to eq("resp_abc123")
         expect(model_completion.response_array).to eq([{
           "id" => "fc_abc123",
           "type" => "function_call",
