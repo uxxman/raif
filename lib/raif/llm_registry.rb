@@ -81,7 +81,14 @@ module Raif
     ]
 
     open_ai_responses_models = open_ai_models.dup.map.with_index do |model, _index|
-      model.merge(key: model[:key].to_s.gsub("open_ai_", "open_ai_responses_").to_sym)
+      model.merge(
+        key: model[:key].to_s.gsub("open_ai_", "open_ai_responses_").to_sym,
+        supported_provider_managed_tools: [
+          Raif::ModelTools::ProviderManaged::WebSearch,
+          Raif::ModelTools::ProviderManaged::CodeExecution,
+          Raif::ModelTools::ProviderManaged::ImageGeneration
+        ]
+      )
     end
 
     {
@@ -93,35 +100,55 @@ module Raif
           api_name: "claude-sonnet-4-20250514",
           input_token_cost: 3.0 / 1_000_000,
           output_token_cost: 15.0 / 1_000_000,
-          max_completion_tokens: 8192
+          max_completion_tokens: 8192,
+          supported_provider_managed_tools: [
+            Raif::ModelTools::ProviderManaged::WebSearch,
+            Raif::ModelTools::ProviderManaged::CodeExecution
+          ]
         },
         {
           key: :anthropic_claude_4_opus,
           api_name: "claude-opus-4-20250514",
           input_token_cost: 15.0 / 1_000_000,
           output_token_cost: 75.0 / 1_000_000,
-          max_completion_tokens: 8192
+          max_completion_tokens: 8192,
+          supported_provider_managed_tools: [
+            Raif::ModelTools::ProviderManaged::WebSearch,
+            Raif::ModelTools::ProviderManaged::CodeExecution
+          ]
         },
         {
           key: :anthropic_claude_3_7_sonnet,
           api_name: "claude-3-7-sonnet-latest",
           input_token_cost: 3.0 / 1_000_000,
           output_token_cost: 15.0 / 1_000_000,
-          max_completion_tokens: 8192
+          max_completion_tokens: 8192,
+          supported_provider_managed_tools: [
+            Raif::ModelTools::ProviderManaged::WebSearch,
+            Raif::ModelTools::ProviderManaged::CodeExecution
+          ]
         },
         {
           key: :anthropic_claude_3_5_sonnet,
           api_name: "claude-3-5-sonnet-latest",
           input_token_cost: 3.0 / 1_000_000,
           output_token_cost: 15.0 / 1_000_000,
-          max_completion_tokens: 8192
+          max_completion_tokens: 8192,
+          supported_provider_managed_tools: [
+            Raif::ModelTools::ProviderManaged::WebSearch,
+            Raif::ModelTools::ProviderManaged::CodeExecution
+          ]
         },
         {
           key: :anthropic_claude_3_5_haiku,
           api_name: "claude-3-5-haiku-latest",
           input_token_cost: 0.8 / 1_000_000,
           output_token_cost: 4.0 / 1_000_000,
-          max_completion_tokens: 8192
+          max_completion_tokens: 8192,
+          supported_provider_managed_tools: [
+            Raif::ModelTools::ProviderManaged::WebSearch,
+            Raif::ModelTools::ProviderManaged::CodeExecution
+          ]
         },
         {
           key: :anthropic_claude_3_opus,

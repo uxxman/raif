@@ -34,6 +34,8 @@ module Raif::Concerns::Llms::Anthropic::ToolFormatting
   end
 
   def format_provider_managed_tool(tool)
+    validate_provider_managed_tool_support!(tool)
+
     case tool.name
     when "Raif::ModelTools::ProviderManaged::WebSearch"
       {
