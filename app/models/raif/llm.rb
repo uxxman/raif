@@ -12,7 +12,8 @@ module Raif
       :supports_native_tool_use,
       :provider_settings,
       :input_token_cost,
-      :output_token_cost
+      :output_token_cost,
+      :supported_provider_managed_tools
 
     validates :key, presence: true
     validates :api_name, presence: true
@@ -25,6 +26,7 @@ module Raif
       key:,
       api_name:,
       model_provider_settings: {},
+      supported_provider_managed_tools: [],
       supports_native_tool_use: true,
       temperature: nil,
       max_completion_tokens: nil,
@@ -39,6 +41,7 @@ module Raif
       @default_max_completion_tokens = max_completion_tokens
       @input_token_cost = input_token_cost
       @output_token_cost = output_token_cost
+      @supported_provider_managed_tools = supported_provider_managed_tools&.map(&:to_s)
     end
 
     def name
@@ -99,6 +102,10 @@ module Raif
 
     def self.valid_response_formats
       VALID_RESPONSE_FORMATS
+    end
+
+    def supports_provider_managed_tool?(tool_klass)
+      supported_provider_managed_tools&.include?(tool_klass.to_s)
     end
 
   private

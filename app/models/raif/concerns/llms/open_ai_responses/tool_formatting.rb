@@ -22,6 +22,11 @@ module Raif::Concerns::Llms::OpenAiResponses::ToolFormatting
   end
 
   def format_provider_managed_tool(tool)
+    unless supports_provider_managed_tool?(tool)
+      raise Raif::Errors::UnsupportedFeatureError,
+        "Invalid provider-managed tool: #{tool.name} for #{key}"
+    end
+
     case tool.name
     when "Raif::ModelTools::ProviderManaged::WebSearch"
       { type: "web_search_preview" }
