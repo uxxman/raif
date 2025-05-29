@@ -103,6 +103,18 @@ module Raif
       Raif.config.validate!
     end
 
+    config.after_initialize do
+      # Check to see if the host app is missing any of our migrations
+      # and print a warning if they are
+      next unless Rails.env.development?
+      next if File.basename($PROGRAM_NAME) == "rake"
+
+      # Skip if we're running inside the engine's own dummy app
+      next if Rails.root.to_s.include?("raif/spec/dummy")
+
+      Raif::MigrationChecker.check_and_warn!
+    end
+
     initializer "raif.assets" do
       if Rails.application.config.respond_to?(:assets)
         Rails.application.config.assets.precompile += [
