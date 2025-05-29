@@ -4,12 +4,10 @@ module Raif
   module MigrationChecker
     class << self
       def uninstalled_migrations
-        engine_migrations = engine_migration_files
-        host_migrations = host_migration_files
+        engine_migration_names = engine_migration_names_from_context
+        ran_migration_names = ran_migration_names_from_host
 
-        engine_migrations.reject do |engine_migration|
-          host_migrations.any?{|host_migration| migrations_match?(engine_migration, host_migration) }
-        end
+        engine_migration_names - ran_migration_names
       end
 
       def check_and_warn!
@@ -27,53 +25,43 @@ module Raif
 
     private
 
-      def engine_migration_files
-        migration_dir = File.join(Raif::Engine.root, "db", "migrate")
-        return [] unless Dir.exist?(migration_dir)
+      def engine_migration_names_from_context
+        engine_paths = Raif::Engine.paths["db/migrate"].existent
+        return [] if engine_paths.empty?
 
-        Dir.glob(File.join(migration_dir, "*.rb")).map do |file|
-          File.basename(file)
-        end.sort
+        ActiveRecord::MigrationContext.new(engine_paths).migrations.map(&:name)
+      rescue => e
+        Rails.logger&.debug("Raif: Could not load engine migrations: #{e.message}")
+        []
       end
 
-      def host_migration_files
+      def ran_migration_names_from_host
         return [] unless defined?(Rails) && Rails.application
 
-        migration_dir = Rails.application.paths["db/migrate"].first
-        return [] unless migration_dir && Dir.exist?(migration_dir)
+        app_paths = Rails.application.paths["db/migrate"].expanded
+        return [] if app_paths.empty?
 
-        # Look for both .raif.rb and .rb files that contain 'raif' in the name
-        raif_files = Dir.glob(File.join(migration_dir, "*raif*.rb"))
-        raif_files.map do |file|
-          File.basename(file)
-        end.sort
+        ctx = ActiveRecord::MigrationContext.new(app_paths)
+        ran_versions = ctx.get_all_versions
+        ctx.migrations.select{|m| ran_versions.include?(m.version) }.map(&:name)
+      rescue ActiveRecord::NoDatabaseError
+        # Database doesn't exist yet, so no migrations have been run
+        []
+      rescue => e
+        Rails.logger&.debug("Raif: Could not load migration status: #{e.message}")
+        []
       end
 
-      def migrations_match?(engine_migration, host_migration)
-        # Extract the migration name without timestamp
-        engine_name = extract_migration_name(engine_migration)
-        host_name = extract_migration_name(host_migration)
-
-        engine_name == host_name
-      end
-
-      def extract_migration_name(filename)
-        # Remove timestamp and .rb/.raif.rb extension
-        # e.g., "20250224234252_create_raif_tables.rb" -> "create_raif_tables"
-        # e.g., "20250529142730_create_raif_tables.raif.rb" -> "create_raif_tables"
-        filename.gsub(/^\d+_/, "").gsub(/\.raif\.rb$/, "").gsub(/\.rb$/, "")
-      end
-
-      def build_warning_message(uninstalled_migrations)
+      def build_warning_message(uninstalled_migration_names)
         <<~WARNING
           \e[33m
           ⚠️  RAIF MIGRATION WARNING ⚠️
 
-          The following Raif migrations have not been installed in your application:
+          The following Raif migrations have not been run in your application:
 
-          #{uninstalled_migrations.map{|m| "  • #{m}" }.join("\n")}
+          #{uninstalled_migration_names.map { |name| "  • #{name}" }.join("\n")}
 
-          To install these migrations, run:
+          To install and run these migrations:
 
             rails raif:install:migrations
             rails db:migrate

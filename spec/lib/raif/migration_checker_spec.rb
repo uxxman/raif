@@ -5,20 +5,20 @@ require "rails_helper"
 RSpec.describe Raif::MigrationChecker do
   describe ".uninstalled_migrations" do
     before do
-      # Mock engine migration files
-      allow(described_class).to receive(:engine_migration_files).and_return([
-        "20250224234252_create_raif_tables.rb",
-        "20250421202149_add_response_format_to_raif_conversations.rb",
-        "20250424200755_add_cost_columns_to_raif_model_completions.rb"
+      # Mock engine migration names
+      allow(described_class).to receive(:engine_migration_names_from_context).and_return([
+        "CreateRaifTables",
+        "AddResponseFormatToRaifConversations",
+        "AddCostColumnsToRaifModelCompletions"
       ])
     end
 
-    context "when all migrations are installed" do
+    context "when all migrations have been run" do
       before do
-        allow(described_class).to receive(:host_migration_files).and_return([
-          "20250101000000_create_raif_tables.raif.rb",
-          "20250102000000_add_response_format_to_raif_conversations.raif.rb",
-          "20250103000000_add_cost_columns_to_raif_model_completions.raif.rb"
+        allow(described_class).to receive(:ran_migration_names_from_host).and_return([
+          "CreateRaifTables",
+          "AddResponseFormatToRaifConversations",
+          "AddCostColumnsToRaifModelCompletions"
         ])
       end
 
@@ -27,32 +27,32 @@ RSpec.describe Raif::MigrationChecker do
       end
     end
 
-    context "when some migrations are missing" do
+    context "when some migrations have not been run" do
       before do
-        allow(described_class).to receive(:host_migration_files).and_return([
-          "20250101000000_create_raif_tables.raif.rb"
+        allow(described_class).to receive(:ran_migration_names_from_host).and_return([
+          "CreateRaifTables"
         ])
       end
 
-      it "returns the missing migrations" do
+      it "returns the unrun migrations" do
         uninstalled = described_class.uninstalled_migrations
-        expect(uninstalled).to include("20250421202149_add_response_format_to_raif_conversations.rb")
-        expect(uninstalled).to include("20250424200755_add_cost_columns_to_raif_model_completions.rb")
-        expect(uninstalled).not_to include("20250224234252_create_raif_tables.rb")
+        expect(uninstalled).to include("AddResponseFormatToRaifConversations")
+        expect(uninstalled).to include("AddCostColumnsToRaifModelCompletions")
+        expect(uninstalled).not_to include("CreateRaifTables")
       end
     end
 
-    context "when no migrations are installed" do
+    context "when no migrations have been run" do
       before do
-        allow(described_class).to receive(:host_migration_files).and_return([])
+        allow(described_class).to receive(:ran_migration_names_from_host).and_return([])
       end
 
       it "returns all engine migrations" do
         uninstalled = described_class.uninstalled_migrations
         expect(uninstalled.size).to eq(3)
-        expect(uninstalled).to include("20250224234252_create_raif_tables.rb")
-        expect(uninstalled).to include("20250421202149_add_response_format_to_raif_conversations.rb")
-        expect(uninstalled).to include("20250424200755_add_cost_columns_to_raif_model_completions.rb")
+        expect(uninstalled).to include("CreateRaifTables")
+        expect(uninstalled).to include("AddResponseFormatToRaifConversations")
+        expect(uninstalled).to include("AddCostColumnsToRaifModelCompletions")
       end
     end
   end
@@ -61,7 +61,7 @@ RSpec.describe Raif::MigrationChecker do
     context "when there are uninstalled migrations" do
       before do
         allow(described_class).to receive(:uninstalled_migrations).and_return([
-          "20250224234252_create_raif_tables.rb"
+          "CreateRaifTables"
         ])
         allow(Rails).to receive(:logger).and_return(double("logger", warn: nil))
       end
@@ -76,7 +76,7 @@ RSpec.describe Raif::MigrationChecker do
       end
     end
 
-    context "when all migrations are installed" do
+    context "when all migrations have been run" do
       before do
         allow(described_class).to receive(:uninstalled_migrations).and_return([])
       end
@@ -87,38 +87,43 @@ RSpec.describe Raif::MigrationChecker do
     end
   end
 
-  describe ".extract_migration_name" do
-    it "extracts migration name without timestamp" do
-      expect(described_class.send(:extract_migration_name, "20250224234252_create_raif_tables.rb"))
-        .to eq("create_raif_tables")
-    end
+  describe ".engine_migration_names_from_context" do
+    it "returns migration names from the engine paths" do
+      # This is an integration test that uses the actual engine paths
+      migration_names = described_class.send(:engine_migration_names_from_context)
 
-    it "extracts migration name from .raif.rb files" do
-      expect(described_class.send(:extract_migration_name, "20250529142730_create_raif_tables.raif.rb"))
-        .to eq("create_raif_tables")
+      expect(migration_names).to be_an(Array)
+      expect(migration_names).to include("CreateRaifTables")
     end
   end
 
-  describe ".migrations_match?" do
-    it "returns true when migration names match despite different timestamps" do
-      engine_migration = "20250224234252_create_raif_tables.rb"
-      host_migration = "20250101000000_create_raif_tables.rb"
+  describe ".ran_migration_names_from_host" do
+    context "when database exists and migrations have been run" do
+      it "returns the names of run migrations" do
+        # Mock the migration context and versions
+        mock_ctx = double("migration_context")
+        mock_migration = double("migration", name: "CreateUsers", version: 123)
+        mock_paths = double("paths", expanded: ["/fake/path"])
 
-      expect(described_class.send(:migrations_match?, engine_migration, host_migration)).to be true
+        allow(Rails.application).to receive(:paths).and_return({ "db/migrate" => mock_paths })
+        allow(ActiveRecord::MigrationContext).to receive(:new).and_return(mock_ctx)
+        allow(mock_ctx).to receive(:get_all_versions).and_return([123])
+        allow(mock_ctx).to receive(:migrations).and_return([mock_migration])
+
+        result = described_class.send(:ran_migration_names_from_host)
+        expect(result).to eq(["CreateUsers"])
+      end
     end
 
-    it "returns true when comparing engine .rb with host .raif.rb files" do
-      engine_migration = "20250224234252_create_raif_tables.rb"
-      host_migration = "20250529142730_create_raif_tables.raif.rb"
+    context "when database doesn't exist" do
+      it "returns an empty array" do
+        mock_paths = double("paths", expanded: ["/fake/path"])
+        allow(Rails.application).to receive(:paths).and_return({ "db/migrate" => mock_paths })
+        allow(ActiveRecord::MigrationContext).to receive(:new).and_raise(ActiveRecord::NoDatabaseError)
 
-      expect(described_class.send(:migrations_match?, engine_migration, host_migration)).to be true
-    end
-
-    it "returns false when migration names don't match" do
-      engine_migration = "20250224234252_create_raif_tables.rb"
-      host_migration = "20250101000000_add_some_column.rb"
-
-      expect(described_class.send(:migrations_match?, engine_migration, host_migration)).to be false
+        result = described_class.send(:ran_migration_names_from_host)
+        expect(result).to eq([])
+      end
     end
   end
 end
