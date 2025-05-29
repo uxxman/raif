@@ -41,7 +41,7 @@ module Raif
       @default_max_completion_tokens = max_completion_tokens
       @input_token_cost = input_token_cost
       @output_token_cost = output_token_cost
-      @supported_provider_managed_tools = supported_provider_managed_tools&.map(&:to_s)
+      @supported_provider_managed_tools = supported_provider_managed_tools.map(&:to_s)
     end
 
     def name
@@ -106,6 +106,13 @@ module Raif
 
     def supports_provider_managed_tool?(tool_klass)
       supported_provider_managed_tools&.include?(tool_klass.to_s)
+    end
+
+    def validate_provider_managed_tool_support!(tool)
+      unless supports_provider_managed_tool?(tool)
+        raise Raif::Errors::UnsupportedFeatureError,
+          "Invalid provider-managed tool: #{tool.name} for #{key}"
+      end
     end
 
   private
