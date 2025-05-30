@@ -77,26 +77,26 @@ class Raif::Utils::HtmlFragmentProcessor
     # for both target="_blank" addition and tracking parameter removal.
     #
     # @param html [String, Nokogiri::HTML::DocumentFragment] The HTML content containing links to process
-    # @param add_target_blank [Boolean] Whether to add target="_blank" and rel="noopener" to links (default: true)
-    # @param strip_tracking_parameters [Boolean] Whether to remove tracking parameters from URLs (default: true)
+    # @param add_target_blank [Boolean] Whether to add target="_blank" and rel="noopener" to links (required)
+    # @param strip_tracking_parameters [Boolean] Whether to remove tracking parameters from URLs (required)
     # @return [String] Processed HTML with modified links
     #
     # @example Default behavior (adds target="_blank" and strips tracking params)
-    #   process_links('<a href="https://example.com?utm_source=test">Link</a>')
+    #   process_links('<a href="https://example.com?utm_source=test">Link</a>', add_target_blank: true, strip_tracking_parameters: true)
     #   # => '<a href="https://example.com" target="_blank" rel="noopener">Link</a>'
     #
     # @example Only strip tracking parameters
-    #   process_links(html, add_target_blank: false)
+    #   process_links(html, add_target_blank: false, strip_tracking_parameters: true)
     #   # => '<a href="https://example.com">Link</a>'
     #
     # @example Only add target="_blank"
-    #   process_links(html, strip_tracking_parameters: false)
+    #   process_links(html, add_target_blank: true, strip_tracking_parameters: false)
     #   # => '<a href="https://example.com?utm_source=test" target="_blank" rel="noopener">Link</a>'
     #
     # @example No processing
     #   process_links(html, add_target_blank: false, strip_tracking_parameters: false)
     #   # => Original HTML unchanged
-    def process_links(html, add_target_blank: true, strip_tracking_parameters: true)
+    def process_links(html, add_target_blank:, strip_tracking_parameters:)
       fragment = html.is_a?(Nokogiri::HTML::DocumentFragment) ? html : Nokogiri::HTML.fragment(html)
 
       fragment.css("a").each do |link|
