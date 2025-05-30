@@ -1,14 +1,11 @@
 # frozen_string_literal: true
 
 Raif.configure do |config|
-  # Whether models via AWS Bedrock are enabled. Defaults to false
-  # config.bedrock_models_enabled = false
-
   # The AWS Bedrock region to use. Defaults to "us-east-1"
-  # config.aws_bedrock_region = "us-east-1"
+  # config.aws_bedrock_region = "eu-central-1"
 
   # Prefix to apply to the model name in AWS Bedrock API calls
-  # config.bedrock_model_name_prefix = "us"
+  # config.bedrock_model_name_prefix = "eu"
 
   # Whether Titan embedding models are enabled. Defaults to false
   # config.bedrock_embedding_models_enabled = false
@@ -48,13 +45,6 @@ Raif.configure do |config|
   # If you want to use custom agent types that inherits from Raif::Agent, you can add them here.
   # config.agent_types += ["MyAgent"]
 
-  # The superclass for Raif models. Defaults to "ApplicationRecord"
-  # config.model_superclass = "ApplicationRecord"
-
   # The user tool types that are available. Defaults to []
   # config.user_tool_types = []
-
-  # Whether LLM API requests are enabled. Defaults to true.
-  # Use this to globally disable requests to LLM APIs.
-  # config.llm_api_requests_enabled = true
 end

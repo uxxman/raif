@@ -56,11 +56,6 @@ module Raif
         raise ArgumentError, "Raif::Llm#chat - You must provide either a message: or messages: argument, not both"
       end
 
-      unless Raif.config.llm_api_requests_enabled
-        Raif.logger.warn("LLM API requests are disabled. Skipping request to #{api_name}.")
-        return
-      end
-
       messages = [{ "role" => "user", "content" => message }] if message.present?
 
       temperature ||= default_temperature
@@ -97,13 +92,13 @@ module Raif
 
     def retry_with_backoff(model_completion)
       retries = 0
-      max_retries = Raif.config.llm_request_max_retries
+      max_retries = 2
       base_delay = 3
       max_delay = 30
 
       begin
         yield
-      rescue *Raif.config.llm_request_retriable_exceptions => e
+      rescue Faraday::ConnectionFailed, Faraday::TimeoutError, Faraday::ServerError => e
         retries += 1
         if retries <= max_retries
           delay = [base_delay * (2**(retries - 1)), max_delay].min

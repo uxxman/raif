@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Raif::ApplicationRecord < Raif.config.model_superclass.constantize
+class Raif::ApplicationRecord < ApplicationRecord
   include Raif::Concerns::BooleanTimestamp
 
   self.abstract_class = true
