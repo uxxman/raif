@@ -83,7 +83,7 @@ RSpec.describe Raif::Utils::HtmlFragmentProcessor do
       it "handles links with special characters in text" do
         markdown = "[Test & Example](https://example.com)"
         result = described_class.convert_markdown_links_to_html(markdown)
-        expect(result).to include(">Test & Example</a>")
+        expect(result).to include(">Test &amp; Example</a>")
       end
 
       it "leaves non-markdown links unchanged" do

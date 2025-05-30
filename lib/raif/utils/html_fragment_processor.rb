@@ -51,7 +51,7 @@ class Raif::Utils::HtmlFragmentProcessor
     # Converts [text](url) format to <a href="url" target="_blank" rel="noopener">text</a>.
     # Also strips tracking parameters from the URLs.
     #
-    # @param html [String] The text content that may contain markdown links
+    # @param text [String] The text content that may contain markdown links
     # @return [String] HTML with markdown links converted to anchor tags
     #
     # @example
@@ -61,13 +61,13 @@ class Raif::Utils::HtmlFragmentProcessor
     # @example With tracking parameters
     #   convert_markdown_links_to_html("[Example](https://example.com?utm_source=test&param=keep)")
     #   # => '<a href="https://example.com?param=keep" target="_blank" rel="noopener">Example</a>'
-    def convert_markdown_links_to_html(html)
+    def convert_markdown_links_to_html(text)
       # Convert markdown links [text](url) to HTML links <a href="url" target="_blank" rel="noopener">text</a>
-      html.gsub(/\[([^\]]*)\]\(([^)]+)\)/) do |_match|
+      text.gsub(/\[([^\]]*)\]\(([^)]+)\)/) do |_match|
         text = ::Regexp.last_match(1)
         url = ::Regexp.last_match(2)
         clean_url = strip_tracking_parameters(url)
-        %(<a href="#{clean_url}" target="_blank" rel="noopener">#{text}</a>)
+        %(<a href="#{CGI.escapeHTML(clean_url)}" target="_blank" rel="noopener">#{CGI.escapeHTML(text)}</a>)
       end
     end
 
