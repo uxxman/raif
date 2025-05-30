@@ -100,6 +100,100 @@ RSpec.describe Raif::Utils::HtmlFragmentProcessor do
     end
   end
 
+  describe ".add_target_blank_to_links" do
+    context "when adding target blank to links" do
+      it "adds target='_blank' and rel='noopener' to a simple link" do
+        html = '<p>Check out <a href="https://example.com">this link</a></p>'
+        result = described_class.add_target_blank_to_links(html)
+        expect(result).to include('<a href="https://example.com" target="_blank" rel="noopener">this link</a>')
+      end
+
+      it "adds attributes to multiple links" do
+        html = '<p>Visit <a href="https://google.com">Google</a> and <a href="https://github.com">GitHub</a></p>'
+        result = described_class.add_target_blank_to_links(html)
+        expect(result).to include('<a href="https://google.com" target="_blank" rel="noopener">Google</a>')
+        expect(result).to include('<a href="https://github.com" target="_blank" rel="noopener">GitHub</a>')
+      end
+
+      it "overwrites existing target and rel attributes" do
+        html = '<a href="https://example.com" target="_self" rel="nofollow">Link</a>'
+        result = described_class.add_target_blank_to_links(html)
+        expect(result).to include('target="_blank"')
+        expect(result).to include('rel="noopener"')
+        expect(result).not_to include('target="_self"')
+        expect(result).not_to include('rel="nofollow"')
+      end
+
+      it "preserves other link attributes" do
+        html = '<a href="https://example.com" class="btn" id="link1" data-test="value">Link</a>'
+        result = described_class.add_target_blank_to_links(html)
+        expect(result).to include('class="btn"')
+        expect(result).to include('id="link1"')
+        expect(result).to include('data-test="value"')
+        expect(result).to include('target="_blank"')
+        expect(result).to include('rel="noopener"')
+      end
+
+      it "handles links within complex HTML structure" do
+        html = '<div><p>Text with <a href="/path">internal link</a> and <span>more <a href="https://external.com">external</a></span></p></div>'
+        result = described_class.add_target_blank_to_links(html)
+        expect(result).to include('<a href="/path" target="_blank" rel="noopener">internal link</a>')
+        expect(result).to include('<a href="https://external.com" target="_blank" rel="noopener">external</a>')
+        expect(result).to include("<div>")
+        expect(result).to include("<span>")
+      end
+
+      it "handles HTML without any links" do
+        html = "<p>This is just text with no links.</p><div>More content</div>"
+        result = described_class.add_target_blank_to_links(html)
+        expect(result).to eq(html)
+      end
+
+      it "handles empty input" do
+        result = described_class.add_target_blank_to_links("")
+        expect(result).to eq("")
+      end
+
+      it "handles nil input gracefully" do
+        expect { described_class.add_target_blank_to_links(nil) }.not_to raise_error
+      end
+
+      it "handles links with various URL formats" do
+        html = '
+        <a href="https://example.com">HTTPS</a>
+        <a href="http://example.com">HTTP</a>
+        <a href="/relative/path">Relative</a>
+        <a href="#anchor">Anchor</a>
+        <a href="mailto:test@example.com">Email</a>
+        <a href="tel:+1234567890">Phone</a>
+        '
+        result = described_class.add_target_blank_to_links(html)
+
+        expect(result).to include('<a href="https://example.com" target="_blank" rel="noopener">HTTPS</a>')
+        expect(result).to include('<a href="http://example.com" target="_blank" rel="noopener">HTTP</a>')
+        expect(result).to include('<a href="/relative/path" target="_blank" rel="noopener">Relative</a>')
+        expect(result).to include('<a href="#anchor" target="_blank" rel="noopener">Anchor</a>')
+        expect(result).to include('<a href="mailto:test@example.com" target="_blank" rel="noopener">Email</a>')
+        expect(result).to include('<a href="tel:+1234567890" target="_blank" rel="noopener">Phone</a>')
+      end
+
+      it "handles malformed HTML gracefully" do
+        html = '<a href="https://example.com">Unclosed link'
+        result = described_class.add_target_blank_to_links(html)
+        expect(result).to include('target="_blank"')
+        expect(result).to include('rel="noopener"')
+      end
+
+      it "preserves link content with HTML entities" do
+        html = '<a href="https://example.com">Link with &amp; entity</a>'
+        result = described_class.add_target_blank_to_links(html)
+        expect(result).to include('target="_blank"')
+        expect(result).to include('rel="noopener"')
+        expect(result).to include("Link with &amp; entity")
+      end
+    end
+  end
+
   describe ".strip_tracking_parameters" do
     context "when stripping tracking parameters" do
       it "removes UTM parameters" do

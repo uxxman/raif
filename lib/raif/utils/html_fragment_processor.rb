@@ -12,7 +12,7 @@ class Raif::Utils::HtmlFragmentProcessor
 
   class << self
     def clean_html_fragment(html, allowed_tags: nil, allowed_attributes: nil)
-      fragment = Nokogiri::HTML.fragment(html)
+      fragment = html.is_a?(Nokogiri::HTML::DocumentFragment) ? html : Nokogiri::HTML.fragment(html)
 
       fragment.traverse do |node|
         if node.text? && node.text.strip.empty?
@@ -34,6 +34,17 @@ class Raif::Utils::HtmlFragmentProcessor
         clean_url = strip_tracking_parameters(url)
         %(<a href="#{clean_url}" target="_blank" rel="noopener">#{text}</a>)
       end
+    end
+
+    def add_target_blank_to_links(html)
+      fragment = html.is_a?(Nokogiri::HTML::DocumentFragment) ? html : Nokogiri::HTML.fragment(html)
+
+      fragment.css("a").each do |link|
+        link["target"] = "_blank"
+        link["rel"] = "noopener"
+      end
+
+      fragment.to_html
     end
 
     def strip_tracking_parameters(url)
