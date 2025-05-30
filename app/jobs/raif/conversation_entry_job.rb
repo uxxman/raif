@@ -2,6 +2,7 @@
 
 module Raif
   class ConversationEntryJob < ApplicationJob
+    include ActionView::RecordIdentifier
 
     before_enqueue do |job|
       conversation_entry = job.arguments.first[:conversation_entry]

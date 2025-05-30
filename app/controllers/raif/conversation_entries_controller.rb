@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Raif::ConversationEntriesController < Raif::ApplicationController
+class Raif::ConversationEntriesController < ApplicationController
   before_action :set_conversation
 
   def new

@@ -21,12 +21,6 @@ module Raif
     end
 
     config.after_initialize do
-      ActiveSupport.on_load(:action_view) do
-        include Raif::Shared::ConversationsHelper
-      end
-    end
-
-    config.after_initialize do
       next unless Raif.config.bedrock_models_enabled
 
       require "aws-sdk-bedrockruntime"
@@ -66,21 +60,5 @@ module Raif
     config.after_initialize do
       Raif.config.validate!
     end
-
-    initializer "raif.assets" do
-      if Rails.application.config.respond_to?(:assets)
-        Rails.application.config.assets.precompile += [
-          "raif.js",
-          "raif.css"
-        ]
-      end
-    end
-
-    initializer "raif.importmap", before: "importmap" do |app|
-      if Rails.application.respond_to?(:importmap)
-        app.config.importmap.paths << Raif::Engine.root.join("config/importmap.rb")
-      end
-    end
-
   end
 end

@@ -244,10 +244,10 @@ In a controller serving the conversation view:
 ```ruby
 class ExampleConversationController < ApplicationController
   def show
-    @conversation = Raif::Conversation.where(creator: current_user).order(created_at: :desc).first
+    @conversation = Raif::Conversation.where(creator: Current.user).order(created_at: :desc).first
 
     if @conversation.nil?
-      @conversation = Raif::Conversation.new(creator: current_user)
+      @conversation = Raif::Conversation.new(creator: Current.user)
       @conversation.save!
     end
   end
@@ -307,7 +307,7 @@ Raif also provides `Raif::Agents::ReActAgent`, which implements a ReAct-style ag
 agent = Raif::Agents::ReActAgent.new(
   task: "Research the history of the Eiffel Tower",
   available_model_tools: [Raif::ModelTools::WikipediaSearch, Raif::ModelTools::FetchUrl],
-  creator: current_user
+  creator: Current.user
 )
 
 # Run the agent and get the final answer
@@ -503,7 +503,7 @@ file = Raif::ModelFileInput.new(input: "path/to/file.pdf")
 
 # Assumes you've created a PdfContentExtraction task
 task = Raif::Tasks::PdfContentExtraction.run(
-  creator: current_user,
+  creator: Current.user,
   files: [file]
 )
 ```
@@ -514,7 +514,7 @@ image = Raif::ModelImageInput.new(input: "path/to/image.png")
 
 # Assumes you've created a ImageDescriptionGeneration task
 task = Raif::Tasks::ImageDescriptionGeneration.run(
-  creator: current_user,
+  creator: Current.user,
   images: [image]
 )
 ```

@@ -14,7 +14,6 @@ require "faraday"
 require "json-schema"
 require "loofah"
 require "reverse_markdown"
-require "turbo-rails"
 
 module Raif
   class << self
