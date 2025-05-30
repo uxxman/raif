@@ -16,7 +16,7 @@ RSpec.describe Raif::Concerns::LlmResponseParsing do
 
   describe "llm_response_allowed_attributes" do
     it "allows the specified attributes" do
-      expect(Raif::TestHtmlTask.allowed_attributes).to eq(%w[style href target rel])
+      expect(Raif::TestHtmlTask.allowed_attributes).to eq(%w[style href])
     end
 
     it "strips attributes that are not allowed" do
@@ -29,22 +29,22 @@ RSpec.describe Raif::Concerns::LlmResponseParsing do
     context "with valid markdown links" do
       it "converts basic markdown links to HTML links" do
         task = Raif::TestHtmlTask.new(raw_response: "Check out [Google](https://google.com) for search.")
-        expect(task.parsed_response).to eq('Check out <a href="https://google.com" target="_blank" rel="noopener">Google</a> for search.')
+        expect(task.parsed_response).to eq('Check out <a href="https://google.com">Google</a> for search.')
       end
 
       it "converts multiple markdown links in the same content" do
         task = Raif::TestHtmlTask.new(raw_response: "Visit [Google](https://google.com) or [GitHub](https://github.com) for resources.")
-        expect(task.parsed_response).to eq('Visit <a href="https://google.com" target="_blank" rel="noopener">Google</a> or <a href="https://github.com" target="_blank" rel="noopener">GitHub</a> for resources.') # rubocop:disable Layout/LineLength
+        expect(task.parsed_response).to eq('Visit <a href="https://google.com">Google</a> or <a href="https://github.com">GitHub</a> for resources.')
       end
 
       it "converts markdown links within HTML content" do
         task = Raif::TestHtmlTask.new(raw_response: "<p>Visit [Google](https://google.com) for search.</p>")
-        expect(task.parsed_response).to eq('<p>Visit <a href="https://google.com" target="_blank" rel="noopener">Google</a> for search.</p>')
+        expect(task.parsed_response).to eq('<p>Visit <a href="https://google.com">Google</a> for search.</p>')
       end
 
       it "handles relative URLs" do
         task = Raif::TestHtmlTask.new(raw_response: "Go to [home page](/home) or [about page](../about).")
-        expect(task.parsed_response).to eq('Go to <a href="/home" target="_blank" rel="noopener">home page</a> or <a href="../about" target="_blank" rel="noopener">about page</a>.') # rubocop:disable Layout/LineLength
+        expect(task.parsed_response).to eq('Go to <a href="/home">home page</a> or <a href="../about">about page</a>.')
       end
     end
 
@@ -55,8 +55,6 @@ RSpec.describe Raif::Concerns::LlmResponseParsing do
         # The link should be converted but the javascript: protocol should be removed by the sanitizer
         expect(parsed).not_to include("javascript:")
         expect(parsed).to include("here") # Text should remain
-        expect(parsed).to include('target="_blank"')
-        expect(parsed).to include('rel="noopener"')
       end
 
       it "sanitizes data: URLs with scripts" do
@@ -64,8 +62,6 @@ RSpec.describe Raif::Concerns::LlmResponseParsing do
         parsed = task.parsed_response
         expect(parsed).not_to include("data:")
         expect(parsed).to include("here")
-        expect(parsed).to include('target="_blank"')
-        expect(parsed).to include('rel="noopener"')
       end
 
       it "sanitizes vbscript: URLs" do
@@ -73,8 +69,6 @@ RSpec.describe Raif::Concerns::LlmResponseParsing do
         parsed = task.parsed_response
         expect(parsed).not_to include("vbscript:")
         expect(parsed).to include("here")
-        expect(parsed).to include('target="_blank"')
-        expect(parsed).to include('rel="noopener"')
       end
 
       it "allows safe protocols like mailto:" do
@@ -82,30 +76,28 @@ RSpec.describe Raif::Concerns::LlmResponseParsing do
         parsed = task.parsed_response
         expect(parsed).to include('href="mailto:test@example.com"')
         expect(parsed).to include("contact")
-        expect(parsed).to include('target="_blank"')
-        expect(parsed).to include('rel="noopener"')
       end
     end
 
     context "with edge cases" do
       it "handles markdown links with parentheses in the text" do
         task = Raif::TestHtmlTask.new(raw_response: "Check [Example (test)](https://example.com) site.")
-        expect(task.parsed_response).to eq('Check <a href="https://example.com" target="_blank" rel="noopener">Example (test)</a> site.')
+        expect(task.parsed_response).to eq('Check <a href="https://example.com">Example (test)</a> site.')
       end
 
       it "handles markdown links with nested parentheses in the text" do
         task = Raif::TestHtmlTask.new(raw_response: "Check [Example ((test))](https://example.com) site.")
-        expect(task.parsed_response).to eq('Check <a href="https://example.com" target="_blank" rel="noopener">Example ((test))</a> site.')
+        expect(task.parsed_response).to eq('Check <a href="https://example.com">Example ((test))</a> site.')
       end
 
       it "handles markdown links with multiple parentheses in the text" do
         task = Raif::TestHtmlTask.new(raw_response: "Check [Example (test) (here)](https://example.com) site.")
-        expect(task.parsed_response).to eq('Check <a href="https://example.com" target="_blank" rel="noopener">Example (test) (here)</a> site.')
+        expect(task.parsed_response).to eq('Check <a href="https://example.com">Example (test) (here)</a> site.')
       end
 
       it "handles empty link text" do
         task = Raif::TestHtmlTask.new(raw_response: "Click [](https://example.com) to visit.")
-        expect(task.parsed_response).to eq('Click <a href="https://example.com" target="_blank" rel="noopener"></a> to visit.')
+        expect(task.parsed_response).to eq('Click <a href="https://example.com"></a> to visit.')
       end
 
       it "doesn't convert invalid markdown link syntax" do
@@ -122,34 +114,34 @@ RSpec.describe Raif::Concerns::LlmResponseParsing do
     context "with HTML code blocks" do
       it "converts markdown links after stripping HTML code block markers" do
         task = Raif::TestHtmlTask.new(raw_response: "```html\n<p>Visit [Google](https://google.com)</p>\n```")
-        expect(task.parsed_response).to eq('<p>Visit <a href="https://google.com" target="_blank" rel="noopener">Google</a></p>')
+        expect(task.parsed_response).to eq('<p>Visit <a href="https://google.com">Google</a></p>')
       end
     end
 
     context "with tracking parameters" do
       it "strips UTM parameters from URLs" do
         task = Raif::TestHtmlTask.new(raw_response: "Check out [Google](https://google.com?utm_source=email&utm_medium=newsletter&utm_campaign=spring) for search.") # rubocop:disable Layout/LineLength
-        expect(task.parsed_response).to eq('Check out <a href="https://google.com" target="_blank" rel="noopener">Google</a> for search.')
+        expect(task.parsed_response).to eq('Check out <a href="https://google.com">Google</a> for search.')
       end
 
       it "preserves legitimate query parameters while stripping tracking ones" do
         task = Raif::TestHtmlTask.new(raw_response: "Search [results](https://example.com?q=ruby&page=2&utm_source=google) here.")
-        expect(task.parsed_response).to eq('Search <a href="https://example.com?q=ruby&amp;page=2" target="_blank" rel="noopener">results</a> here.')
+        expect(task.parsed_response).to eq('Search <a href="https://example.com?q=ruby&amp;page=2">results</a> here.')
       end
 
       it "handles URLs without query parameters" do
         task = Raif::TestHtmlTask.new(raw_response: "Visit [Example](https://example.com) site.")
-        expect(task.parsed_response).to eq('Visit <a href="https://example.com" target="_blank" rel="noopener">Example</a> site.')
+        expect(task.parsed_response).to eq('Visit <a href="https://example.com">Example</a> site.')
       end
 
       it "handles mixed case tracking parameters" do
         task = Raif::TestHtmlTask.new(raw_response: "Check [this](https://example.com?Utm_Source=email) link.")
-        expect(task.parsed_response).to eq('Check <a href="https://example.com" target="_blank" rel="noopener">this</a> link.')
+        expect(task.parsed_response).to eq('Check <a href="https://example.com">this</a> link.')
       end
 
       it "handles invalid URLs gracefully" do
         task = Raif::TestHtmlTask.new(raw_response: "Check [this](not-a-valid-url?utm_source=email) link.")
-        expect(task.parsed_response).to eq('Check <a href="not-a-valid-url?utm_source=email" target="_blank" rel="noopener">this</a> link.')
+        expect(task.parsed_response).to eq('Check <a href="not-a-valid-url?utm_source=email">this</a> link.')
       end
     end
   end
