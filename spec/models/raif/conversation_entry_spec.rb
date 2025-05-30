@@ -58,7 +58,7 @@ RSpec.describe Raif::ConversationEntry, type: :model do
 
     context "when the response includes a markdown link" do
       before do
-        stub_raif_conversation(conversation) do |_messages, model_completion|
+        stub_raif_conversation(conversation) do |_messages, _model_completion|
           "Here's a [link](https://example.com). It's a good link."
         end
       end
@@ -73,7 +73,7 @@ RSpec.describe Raif::ConversationEntry, type: :model do
       end
 
       context "when the response format is html" do
-        fit "converts the link to an HTML link" do
+        it "converts the link to an HTML link" do
           conversation.update!(response_format: "html")
           entry.process_entry!
           expect(entry.reload).to be_completed
