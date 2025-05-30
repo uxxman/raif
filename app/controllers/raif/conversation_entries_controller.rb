@@ -22,7 +22,6 @@ class Raif::ConversationEntriesController < Raif::ApplicationController
 
     @conversation_entry = @conversation.entries.new(conversation_entry_params)
     @conversation_entry.raif_user_tool_invocation = user_tool_invocation
-    @conversation_entry.creator = current_user
 
     if @conversation_entry.save
       Raif::ConversationEntryJob.perform_later(conversation_entry: @conversation_entry)

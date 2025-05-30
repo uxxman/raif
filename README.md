@@ -60,16 +60,6 @@ Run the migrations. Raif is compatible with both PostgreSQL and MySQL databases.
 rails db:migrate
 ```
 
-If you plan to use the [conversations](#conversations) feature, configure authentication and authorization for Raif's controllers in `config/initializers/raif.rb`:
-
-```ruby
-Raif.configure do |config|
-  # Configure who can access controllers
-  # For example, to allow all logged in users:
-  config.authorize_controller_action = ->{ current_user.present? }
-end
-```
-
 Configure your LLM providers. You'll need at least one of:
 
 ## AWS Bedrock

@@ -5,7 +5,6 @@ class Raif::ConversationEntry < Raif::ApplicationRecord
   include Raif::Concerns::HasAvailableModelTools
 
   belongs_to :raif_conversation, counter_cache: true, class_name: "Raif::Conversation"
-  belongs_to :creator, polymorphic: true
 
   has_one :raif_user_tool_invocation,
     class_name: "Raif::UserToolInvocation",
@@ -66,7 +65,7 @@ class Raif::ConversationEntry < Raif::ApplicationRecord
   end
 
   def create_entry_for_observation!
-    follow_up_entry = raif_conversation.entries.create!(creator: creator)
+    follow_up_entry = raif_conversation.entries.create!
     Raif::ConversationEntryJob.perform_later(conversation_entry: follow_up_entry)
     follow_up_entry.broadcast_append_to raif_conversation, target: dom_id(raif_conversation, :entries)
   end

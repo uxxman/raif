@@ -35,7 +35,6 @@ class CreateRaifTables < ActiveRecord::Migration[7.1]
 
     create_table :raif_conversation_entries do |t|
       t.references :raif_conversation, null: false, foreign_key: true
-      t.references :creator, polymorphic: true, null: false, index: true
       t.datetime :started_at
       t.datetime :completed_at
       t.datetime :failed_at
