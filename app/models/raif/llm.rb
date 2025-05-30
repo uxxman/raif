@@ -94,6 +94,11 @@ module Raif
       end
 
       model_completion
+    rescue Faraday::Error => e
+      Raif.logger.error("LLM API request failed (status: #{e.response_status}): #{e.message}")
+      Raif.logger.error(e.response_body)
+
+      raise e
     end
 
     def perform_model_completion!(model_completion)
