@@ -36,12 +36,18 @@ class Raif::Utils::HtmlFragmentProcessor
       end
     end
 
-    def add_target_blank_to_links(html)
+    def process_links(html, add_target_blank: true, strip_tracking_parameters: true)
       fragment = html.is_a?(Nokogiri::HTML::DocumentFragment) ? html : Nokogiri::HTML.fragment(html)
 
       fragment.css("a").each do |link|
-        link["target"] = "_blank"
-        link["rel"] = "noopener"
+        if add_target_blank
+          link["target"] = "_blank"
+          link["rel"] = "noopener"
+        end
+
+        if strip_tracking_parameters
+          link["href"] = strip_tracking_parameters(link["href"])
+        end
       end
 
       fragment.to_html
