@@ -93,6 +93,16 @@ RSpec.describe Raif::Concerns::LlmResponseParsing do
         expect(task.parsed_response).to eq('Check <a href="https://example.com" target="_blank" rel="noopener">Example (test)</a> site.')
       end
 
+      it "handles markdown links with nested parentheses in the text" do
+        task = Raif::TestHtmlTask.new(raw_response: "Check [Example ((test))](https://example.com) site.")
+        expect(task.parsed_response).to eq('Check <a href="https://example.com" target="_blank" rel="noopener">Example ((test))</a> site.')
+      end
+
+      it "handles markdown links with multiple parentheses in the text" do
+        task = Raif::TestHtmlTask.new(raw_response: "Check [Example (test) (here)](https://example.com) site.")
+        expect(task.parsed_response).to eq('Check <a href="https://example.com" target="_blank" rel="noopener">Example (test) (here)</a> site.')
+      end
+
       it "handles empty link text" do
         task = Raif::TestHtmlTask.new(raw_response: "Click [](https://example.com) to visit.")
         expect(task.parsed_response).to eq('Click <a href="https://example.com" target="_blank" rel="noopener"></a> to visit.')
