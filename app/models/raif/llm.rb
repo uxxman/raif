@@ -68,7 +68,7 @@ module Raif
       end
 
       unless Raif.config.llm_api_requests_enabled
-        Raif.logger.warn("LLM API requests are disabled. Skipping request to #{api_name}.")
+        Rails.logger.warn("LLM API requests are disabled. Skipping request to #{api_name}.")
         return
       end
 
@@ -94,6 +94,11 @@ module Raif
       end
 
       model_completion
+    rescue Faraday::Error => e
+      Rails.logger.error("LLM API request failed (status: #{e.response_status}): #{e.message}")
+      Rails.logger.error(e.response_body)
+
+      raise e
     end
 
     def perform_model_completion!(model_completion)
@@ -129,12 +134,12 @@ module Raif
         retries += 1
         if retries <= max_retries
           delay = [base_delay * (2**(retries - 1)), max_delay].min
-          Raif.logger.warn("Retrying LLM API request after error: #{e.message}. Attempt #{retries}/#{max_retries}. Waiting #{delay} seconds...")
+          Rails.logger.warn("Retrying LLM API request after error: #{e.message}. Attempt #{retries}/#{max_retries}. Waiting #{delay} seconds...")
           model_completion.increment!(:retry_count)
           sleep delay
           retry
         else
-          Raif.logger.error("LLM API request failed after #{max_retries} retries. Last error: #{e.message}")
+          Rails.logger.error("LLM API request failed after #{max_retries} retries. Last error: #{e.message}")
           raise
         end
       end
