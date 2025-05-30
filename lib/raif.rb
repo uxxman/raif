@@ -13,7 +13,6 @@ require "raif/json_schema_builder"
 require "faraday"
 require "json-schema"
 require "loofah"
-require "pagy"
 require "reverse_markdown"
 require "turbo-rails"
 

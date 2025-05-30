@@ -23,7 +23,6 @@ Raif is built by [Cultivate Labs](https://www.cultivatelabs.com) and is used to 
 - [Images/Files/PDF's](#imagesfilespdfs)
   - [Images/Files/PDF's in Tasks](#imagesfilespdfs-in-tasks)
 - [Embedding Models](#embedding-models)
-- [Web Admin](#web-admin)
 - [Customization](#customization)
   - [Controllers](#controllers)
   - [Models](#models)
@@ -61,17 +60,13 @@ Run the migrations. Raif is compatible with both PostgreSQL and MySQL databases.
 rails db:migrate
 ```
 
-If you plan to use the [conversations](#conversations) feature or Raif's [web admin](#web-admin), configure authentication and authorization for Raif's controllers in `config/initializers/raif.rb`:
+If you plan to use the [conversations](#conversations) feature, configure authentication and authorization for Raif's controllers in `config/initializers/raif.rb`:
 
 ```ruby
 Raif.configure do |config|
-  # Configure who can access non-admin controllers
+  # Configure who can access controllers
   # For example, to allow all logged in users:
   config.authorize_controller_action = ->{ current_user.present? }
-
-  # Configure who can access admin controllers
-  # For example, to allow users with admin privileges:
-  config.authorize_admin_controller_action = ->{ current_user&.admin? }
 end
 ```
 
@@ -97,7 +92,7 @@ Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ru
 
 # Chatting with the LLM
 
-When using Raif, it's often useful to use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM which can be viewed in the [web admin](#web-admin).
+When using Raif, it's often useful to use one of the [higher level abstractions](#key-raif-concepts) in your application. But when needed, you can utilize `Raif::Llm` to chat with the model directly. All calls to the LLM will create and return a `Raif::ModelCompletion` record, providing you a log of all interactions with the LLM.
 
 Call `Raif::Llm#chat` with either a `message` string or `messages` array.:
 ```ruby
@@ -572,64 +567,7 @@ model = Raif.embedding_model(:bedrock_titan_embed_text_v2)
 embedding = model.generate_embedding!("Your text here")
 ```
 
-# Web Admin
-
-Raif includes a web admin interface for viewing all interactions with the LLM. Assuming you have the engine mounted at `/raif`, you can access the admin interface at `/raif/admin`.
-
-The admin interface contains sections for:
-- Model Completions
-- Tasks
-- Conversations
-- Agents
-- Model Tool Invocations
-- Stats
-
-
-### Model Completions
-  ![Model Completions Index](./screenshots/admin-model-completions-index.png)
-  ![Model Completion Detail](./screenshots/admin-model-completion-show.png)
-
-### Tasks
-  ![Tasks Index](./screenshots/admin-tasks-index.png)
-
-### Conversations
-  ![Conversations Index](./screenshots/admin-conversations-index.png)
-  ![Conversation Detail](./screenshots/admin-conversation-show.png)
-
-### Agents
-  ![Agents Index](./screenshots/admin-agents-index.png)
-  ![Agents Detail](./screenshots/admin-agents-show.png)
-
-### Model Tool Invocations
-  ![Model Tool Invocations Index](./screenshots/admin-model-tool-invocations-index.png)
-  ![Model Tool Invocation Detail](./screenshots/admin-model-tool-invocation-show.png)
-
-### Stats
-  ![Stats](./screenshots/admin-stats.png)
-
 # Customization
-
-## Controllers
-
-You can override Raif's controllers by creating your own that inherit from Raif's base controllers:
-
-```ruby
-class ConversationsController < Raif::ConversationsController
-  # Your customizations here
-end
-
-class ConversationEntriesController < Raif::ConversationEntriesController
-  # Your customizations here
-end
-```
-
-Then update the configuration:
-```ruby
-Raif.configure do |config|
-  config.conversations_controller = "ConversationsController"
-  config.conversation_entries_controller = "ConversationEntriesController"
-end
-```
 
 ## Models
 

@@ -30,13 +30,8 @@ Raif.configure do |config|
   #
   # config.default_embedding_model_key = "bedrock_titan_embed_text_v2"
 
-  # A lambda that returns true if the current user is authorized to access admin controllers.
-  # By default it returns false, so you must implement this in your application to use the admin controllers.
-  # If your application's user model has an admin? method, you could use something like this:
-  # config.authorize_admin_controller_action = ->{ current_user&.admin? }
-
-  # A lambda that returns true if the current user is authorized to access non-admin controllers.
-  # By default it returns false, so you must implement this in your application to use the non-admin controllers.
+  # A lambda that returns true if the current user is authorized to access controllers.
+  # By default it returns false, so you must implement this in your application to use the controllers.
   # If you wanted to allow access to all logged in users, you could use something like this:
   # config.authorize_controller_action = ->{ current_user.present? }
 
@@ -53,14 +48,6 @@ Raif.configure do |config|
   # The conversation types that are available. Defaults to ["Raif::Conversation"]
   # If you want to use custom conversation types that inherits from Raif::Conversation, you can add them here.
   # config.conversation_types += ["Raif::MyConversation"]
-
-  # The controller class for conversations. Defaults to "Raif::ConversationsController"
-  # If you want to use a custom controller that inherits from Raif::ConversationsController, you can set it here.
-  # config.conversations_controller = "Raif::ConversationsController"
-
-  # The controller class for conversation entries. Defaults to "Raif::ConversationEntriesController"
-  # If you want to use a custom controller that inherits from Raif::ConversationEntriesController, you can set it here.
-  # config.conversation_entries_controller = "Raif::ConversationEntriesController"
 
   # The method to call to get the current user. Defaults to :current_user
   # config.current_user_method = :current_user

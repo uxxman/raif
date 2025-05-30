@@ -1,17 +1,14 @@
 ## v1.1.0
 
 - Added ability to generate embeddings. [#77](https://github.com/CultivateLabs/raif/pull/77)
-- Added a Stats section to the admin interface. [#90](https://github.com/CultivateLabs/raif/pull/90)
 - AWS Bedrock is now disabled by default. This ensures the `aws-sdk-bedrockruntime` gem is not required unless you use AWS Bedrock models. [#94](https://github.com/CultivateLabs/raif/pull/94)
 - Added `gpt-4.1`, `gpt-4.1-mini`, and `gpt-4.1-nano` models to the default list of supported LLMs. [#74](https://github.com/CultivateLabs/raif/pull/74)
 - Added `claude-4-sonnet` and `claude-4-opus` models to the default list of supported LLMs. [#119](https://github.com/CultivateLabs/raif/pull/119)
 - `Raif::ModelTool` subclasses can now define the tool's arguments schema via a `tool_arguments_schema` block. [#96](https://github.com/CultivateLabs/raif/pull/96)
 - `Raif::ModelTool` subclasses can now define `tool_description` and `example_model_invocation` via blocks. [#99](https://github.com/CultivateLabs/raif/pull/99)
 - `Raif::Task` subclasses can now define a `json_response_schema` block to specify the JSON response schema for the task. [#109](https://github.com/CultivateLabs/raif/pull/109)
-- If a `creator` association implements `raif_display_name`, it will be used in the admin interface. [#65](https://github.com/CultivateLabs/raif/pull/65)
 - Agent types can now implement `populate_default_model_tools` to add default model tools to the agent. `Raif::Agents::ReActAgent` will provide these via system prompt. [#66](https://github.com/CultivateLabs/raif/pull/66)
 - `Raif::ModelTools::AgentFinalAnswer` removed from the default list of model tools for `Raif::Agents::ReActAgent` since answers are provided via `<answer>` tags. [#66](https://github.com/CultivateLabs/raif/pull/66)
-- Estimated cost is now displayed in the admin interface for model completions. [#69](https://github.com/CultivateLabs/raif/pull/69)
 - `Raif::Conversation` can now be initialized with a `response_format` to specify the format of the response. If you use something other than basic text, you should include instructions in the conversation's system prompt. [#84](https://github.com/CultivateLabs/raif/pull/84)
 - `Raif::Conversation` subtypes can now implement `process_model_response_message` to do custom processing of the model response message before it is saved to the database. [#89](https://github.com/CultivateLabs/raif/pull/89)
 - `Raif::ModelTool` subclasses can now override `def self.triggers_observation_to_model?` to specify if the tool call's results should be automatically provided back to the model (e.g. a SearchTool might automatically provide the observation back to the model during a `Raif::Conversation`). [#85](https://github.com/CultivateLabs/raif/pull/85)

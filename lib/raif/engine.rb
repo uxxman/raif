@@ -71,8 +71,7 @@ module Raif
       if Rails.application.config.respond_to?(:assets)
         Rails.application.config.assets.precompile += [
           "raif.js",
-          "raif.css",
-          "raif_admin.css"
+          "raif.css"
         ]
       end
     end

@@ -4,15 +4,12 @@ module Raif
   class Configuration
     attr_accessor :agent_types,
       :bedrock_models_enabled,
-      :authorize_admin_controller_action,
       :authorize_controller_action,
       :bedrock_model_name_prefix,
       :aws_bedrock_region,
       :bedrock_embedding_models_enabled,
-      :conversation_entries_controller,
       :conversation_system_prompt_intro,
       :conversation_types,
-      :conversations_controller,
       :current_user_method,
       :default_embedding_model_key,
       :default_llm_model_key,
@@ -27,16 +24,13 @@ module Raif
       # Set default config
       @agent_types = Set.new(["Raif::Agents::ReActAgent", "Raif::Agents::NativeToolCallingAgent"])
       @bedrock_models_enabled = false
-      @authorize_admin_controller_action = ->{ false }
       @authorize_controller_action = ->{ false }
       @aws_bedrock_region = "us-east-1"
       @bedrock_model_name_prefix = "us"
       @bedrock_embedding_models_enabled = false
       @task_system_prompt_intro = "You are a helpful assistant."
-      @conversation_entries_controller = "Raif::ConversationEntriesController"
       @conversation_system_prompt_intro = "You are a helpful assistant who is collaborating with a teammate."
       @conversation_types = Set.new(["Raif::Conversation"])
-      @conversations_controller = "Raif::ConversationsController"
       @current_user_method = :current_user
       @default_embedding_model_key = "bedrock_titan_embed_text_v2"
       @default_llm_model_key = "bedrock_nova_pro"
@@ -81,13 +75,6 @@ module Raif
       else
         raise Raif::Errors::InvalidConfigError,
           "Raif.config.authorize_controller_action must respond to :call and return a boolean"
-      end
-
-      if authorize_admin_controller_action.respond_to?(:call)
-        authorize_admin_controller_action.freeze
-      else
-        raise Raif::Errors::InvalidConfigError,
-          "Raif.config.authorize_admin_controller_action must respond to :call and return a boolean"
       end
     end
 
