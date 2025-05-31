@@ -146,7 +146,7 @@ The Anthropic adapter provides access to [provider-managed tools](#provider-mana
 ## AWS Bedrock (Claude)
 ```ruby
 Raif.configure do |config|
-  config.anthropic_bedrock_models_enabled = true
+  config.bedrock_models_enabled = true
   config.aws_bedrock_region = "us-east-1"
   config.default_llm_model_key = "bedrock_claude_3_5_sonnet"
 end
@@ -676,7 +676,7 @@ Raif supports generation of vector embeddings. You can enable and configure embe
 ```ruby
 Raif.configure do |config|
   config.open_ai_embedding_models_enabled = true
-  config.aws_bedrock_titan_embedding_models_enabled = true
+  config.bedrock_embedding_models_enabled = true
   
   config.default_embedding_model_key = "open_ai_text_embedding_3_small"
 end
