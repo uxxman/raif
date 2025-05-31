@@ -157,6 +157,9 @@ Currently supported Bedrock models:
 - `bedrock_claude_3_7_sonnet`
 - `bedrock_claude_3_5_haiku`
 - `bedrock_claude_3_opus`
+- `bedrock_amazon_nova_micro`
+- `bedrock_amazon_nova_lite`
+- `bedrock_amazon_nova_pro`
 
 Note: Raif utilizes the [AWS Bedrock gem](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/BedrockRuntime/Client.html) and AWS credentials should be configured via the AWS SDK (environment variables, IAM role, etc.)
 
