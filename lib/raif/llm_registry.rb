@@ -217,7 +217,7 @@ module Raif
         },
         {
           key: :bedrock_amazon_nova_pro,
-          api_name: "amazon.nova-micro-v1:0",
+          api_name: "amazon.nova-pro-v1:0",
           input_token_cost: 0.0002625 / 1000,
           output_token_cost: 0.0042 / 1000,
           max_completion_tokens: 4096
