@@ -32,6 +32,12 @@ module Raif
       :task_system_prompt_intro,
       :user_tool_types
 
+    alias_method :anthropic_bedrock_models_enabled, :bedrock_models_enabled
+    alias_method :anthropic_bedrock_models_enabled=, :bedrock_models_enabled=
+
+    alias_method :aws_bedrock_titan_embedding_models_enabled, :bedrock_embedding_models_enabled
+    alias_method :aws_bedrock_titan_embedding_models_enabled=, :bedrock_embedding_models_enabled=
+
     def initialize
       # Set default config
       @agent_types = Set.new(["Raif::Agents::ReActAgent", "Raif::Agents::NativeToolCallingAgent"])
